@@ -122,7 +122,7 @@ MC.inner<-function(func,M,param.list, ret.vals, ncpus=1, raw=FALSE, max.grid=100
 #'
 #'@export
 
-MonteCarlo<-function(func, M, param.list, ncpus=1, raw=FALSE, max.grid=1000, packages=NULL, timeNtest=FALSE, save.res=TRUE){
+MonteCarlo<-function(func, M, param.list, ncpus=1, raw=FALSE, max.grid=1000, timeNtest=FALSE, save.res=TRUE){
 
   # -------- check whether arguments supplied to function are admissable 
   

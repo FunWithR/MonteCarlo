@@ -1,0 +1,10 @@
+Package: MonteCarlo
+Type: Package
+Title: Automatically runs parallized Monte Carlo simulations.
+Version: 1.0
+Date: 2015-10-21
+Author: Christian Hendrik Leschinski
+Maintainer: Christian Hendrik Leschinski <leschinski@statistik.uni-hannover.de>
+Description: The Monte Carlo package simplifies Monte Carlo simulation studies by automatically setting up loops to run over parameter grids and parallizing the Monte Carlo repetitions.
+License: Private. Do not redistribute or use without permission.
+Depends: snowfall, codetools
