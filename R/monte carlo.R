@@ -118,7 +118,7 @@ MC.inner<-function(func,M,param.list, ret.vals, ncpus=1, raw=FALSE, max.grid=100
 #'scale.grid<-seq(1,2,1)
 #'param.list=list("n"=n.grid, "loc"=loc.grid, "scale"=scale.grid)
 #'ret.vals<-c("decision","stat")
-#'MonteCarlo(func=test.func, M=500, param.list=param.list, ncpus=4, timeNtest=FALSE)
+#'MonteCarlo(func=test.func2, M=500, param.list=param.list, ncpus=2, timeNtest=FALSE)
 #'
 #'@export
 
