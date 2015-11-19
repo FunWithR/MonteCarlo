@@ -100,7 +100,6 @@ MC.inner<-function(func,M,param.list, ret.vals, ncpus=1, raw=FALSE, max.grid=100
 #'scale.grid<-1
 #'
 #'param.list=list("n"=n.grid, "loc"=loc.grid, "scale"=scale.grid)
-#'ret.vals<-c("decision")
 #' MonteCarlo(func=test.func, M=1000, param.list=param.list, ncpus=1, timeNtest=TRUE, save.res=FALSE)
 #' 
 #'# Modify Test function to have slow example for parallized computation
@@ -117,12 +116,11 @@ MC.inner<-function(func,M,param.list, ret.vals, ncpus=1, raw=FALSE, max.grid=100
 #'loc.grid<-0#seq(0,1,0.1)
 #'scale.grid<-seq(1,2,1)
 #'param.list=list("n"=n.grid, "loc"=loc.grid, "scale"=scale.grid)
-#'ret.vals<-c("decision","stat")
 #'MonteCarlo(func=test.func2, M=500, param.list=param.list, ncpus=2, timeNtest=FALSE)
 #'
 #'@export
 
-MonteCarlo<-function(func, M, param.list, ncpus=1, raw=FALSE, max.grid=1000, timeNtest=FALSE, save.res=TRUE){
+MonteCarlo<-function(func, M, param.list, ncpus=1, packages=NULL, raw=FALSE, max.grid=1000, timeNtest=FALSE, save.res=TRUE){
 
   # -------- check whether arguments supplied to function are admissable 
   
@@ -155,11 +153,11 @@ MonteCarlo<-function(func, M, param.list, ncpus=1, raw=FALSE, max.grid=1000, tim
     for(i in 1:n.exp){# find functions used in every new function
       in.inner.aux<-findGlobals(eval(parse(text=new.funcs[i])))  
       in.inner<-NULL # loop to sort out primitive functions
-      for(i in 1:length(in.inner.aux)){if(is.function(tryCatch(.Primitive(in.inner.aux[i]), error=function(e)FALSE))==FALSE){in.inner<-c(in.inner,in.inner.aux[i])}}
+      for(i in 1:length(in.inner.aux)){if(is.function(tryCatch(.Primitive(in.inner.aux[i]), error=function(e)FALSE))==FALSE){if(tryCatch(is.function(eval(parse(text=in.inner.aux[i]))), error=function(e)FALSE)){in.inner<-c(in.inner,in.inner.aux[i])}}}
       new.funcs2<-c(new.funcs2,subset(in.inner,in.inner%in%all.funcs)) # list those new functions found that are defined in global environment
+      all.funcs.found<-unique(c(all.funcs.found,in.inner[apply(as.matrix(in.inner),1,exists)])) # determine which of the functions defined in inner functions do exist and append to list of all functions that may come from packages
     }
     new.funcs<-new.funcs2
-    all.funcs.found<-unique(c(all.funcs.found,in.inner[apply(as.matrix(in.inner),1,exists)])) # determine which of the functions defined in inner functions do exist and append to list of all functions that may come from packages
     export.functions<-c(export.functions,new.funcs)
   }
   
@@ -178,6 +176,8 @@ MonteCarlo<-function(func, M, param.list, ncpus=1, raw=FALSE, max.grid=1000, tim
   dependencies.list<-unique(dependencies.list)
   dependencies.list<-gsub(" ","",dependencies.list)
   packages<-packages[-which(packages%in%dependencies.list)] # keep only those packages that are not automatically included because they are dependencies
+  
+  print(packages)
   
   # --------- sort param list according to order in arg.list
   arg.list<-as.list(args(func))
