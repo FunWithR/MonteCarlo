@@ -19,9 +19,13 @@ MC.inner<-function(func,M,param.list, ret.vals, ncpus=1, raw=FALSE, max.grid=100
   param.names<-names(param.list)                                                    # names of parameters
   for(i in 1:n.param)(assign(paste(param.names[i],".grid",sep=""),param.list[[i]])) # create grid for each parameter
   
-  h1<-paste(param.names,",",sep="",collapse="")
-  h1<-substr(h1,1,(nchar(h1)-1))
-  eval(parse(text=paste("func2<-function(","aux,",h1,"){func(",h1,")}")))
+  #h1<-paste(param.names,",",sep="",collapse="")
+  #h1<-substr(h1,1,(nchar(h1)-1))
+  #eval(parse(text=paste("func2<-function(","aux,",h1,"){func(",h1,")}")))
+  
+  subm.param<-paste(param.names,"=",param.names,",", sep="",collapse="")
+  subm.param<-substr(subm.param,1,(nchar(subm.param)-1))
+  eval(parse(text=paste("func2<-function(","aux,",subm.param,"){func(",subm.param,")}")))  
   
   grid.size<-prod(dim.vec)
   # include stop condition for large grids
@@ -35,8 +39,7 @@ MC.inner<-function(func,M,param.list, ret.vals, ncpus=1, raw=FALSE, max.grid=100
   assign.param.values<-numeric(n.param)
   for(i in 1:n.param){assign.param.values[i]<-paste(param.names[i],".grid[",index[i],"]",sep="")} 
   assign.param.values<-paste(param.names,"=",assign.param.values,";",sep="",collapse="")
-  subm.param<-paste(param.names,"=",param.names,",", sep="",collapse="")
-  subm.param<-substr(subm.param,1,(nchar(subm.param)-1))
+
   
   #------- create list of arrays for results
   name.list<-list()
@@ -51,8 +54,9 @@ MC.inner<-function(func,M,param.list, ret.vals, ncpus=1, raw=FALSE, max.grid=100
   
   #------- create loops
   
+  
   s1<-paste(paste(c(paste("for(",index, " in 1:", dim.vec,"){", sep="",collapse=""),"rep<-rep+1;setTxtProgressBar(pb, rep);"),collapse=""),assign.param.values, sep="",collapse="")
-  in.export<-paste("'",c('func2',export.functions,param.names),"'", collapse=",", sep="")
+  in.export<-paste("'",c('func2','func',export.functions,param.names),"'", collapse=",", sep="")
   aux.s2<-paste("if(ncpus>1){sfExport(",in.export,")};",sep="")
   s2<-paste("suppressMessages(sfInit(parallel=if(ncpus>1){TRUE}else{FALSE}, cpus = ncpus, type= 'SOCK'));",if(length(packages)>0){paste("capture.output(suppressMessages(sfLibrary(",packages,")));", sep="", collapse="")}else{""},aux.s2,"erg<-sfApply(as.matrix(1:M,M,1),margin=1,fun=func2,",subm.param,");suppressMessages(sfStop());",sep="", collapse="")  
   s3<-paste(paste(paste("results$",ret.vals,"[",sep=""),paste(paste(index,",", collapse="", sep=""),"]<-",sep="",collapse=""),sep=""),paste("as.numeric(unlist(erg)[which(names(unlist(erg))==","'",ret.vals,"'",")]);",sep=""), collapse="")  
@@ -63,7 +67,9 @@ MC.inner<-function(func,M,param.list, ret.vals, ncpus=1, raw=FALSE, max.grid=100
   eval(parse(text=all.loops))
   cat("\n")
   cat(paste("\n","Results:","\n","\n"))
-  if(raw==TRUE){return(results)}else{
+  if(raw==TRUE){
+    return(results)
+    }else{
     output<-list()
     for(i in 1:length(ret.vals)){output[[i]]<-apply(results[[i]],1:n.param,mean)}
     names(output)<-ret.vals
@@ -76,7 +82,7 @@ MC.inner<-function(func,M,param.list, ret.vals, ncpus=1, raw=FALSE, max.grid=100
 
 #' @title Parallized Monte Carlo simulation.
 #' @description \code{MonteCarlo} runs a Monte Carlo simulation study for a correctly specified function and the desired parameter grids. See details.
-#' @details add details here.
+#' @details All input arguments have to be scalar, function has to return list of named scalars, list elements have to be unnamed scalars.
 #' @param func is the function to be evaluated. see details. must return a list
 #' @param M specifies the number of monte carlo repetitions
 #' @param param.list a list whose components are named after the parameters of func and each component is a vector containing the desired grid values for that parameter
@@ -109,30 +115,35 @@ MC.inner<-function(func,M,param.list, ret.vals, ncpus=1, raw=FALSE, max.grid=100
 #'  stat<-sqrt(n)*mean(sample)/sd(sample)
 #'  decision<-abs(stat)>1.96
 #'  for(i in 1:(n)){for(j in 1:(n)){c(i,j)}}
-#'  return(list("stat"=stat, "decision"=decision))
+#'  return(list("decision"=decision))
 #'}
 #'
-#'n.grid<-200
-#'loc.grid<-0#seq(0,1,0.1)
+#'n.grid<-100
+#'loc.grid<-seq(0,1,0.1)
 #'scale.grid<-seq(1,2,1)
 #'param.list=list("n"=n.grid, "loc"=loc.grid, "scale"=scale.grid)
 #'MonteCarlo(func=test.func2, M=500, param.list=param.list, ncpus=2, timeNtest=FALSE)
 #'
 #'@export
 
-MonteCarlo<-function(func, M, param.list, ncpus=1, packages=NULL, raw=FALSE, max.grid=1000, timeNtest=FALSE, save.res=TRUE){
+MonteCarlo<-function(func, M, param.list, ncpus=1, raw=FALSE, max.grid=1000, timeNtest=FALSE, save.res=TRUE){
 
   # -------- check whether arguments supplied to function are admissable 
   
   # for raw==TRUE return array with results, otherwise return mean over repetitions
   if(is.function(func)==FALSE)stop("func must be a function")
   if(is.list(param.list)==FALSE)stop("param.list must be a list containing the names of the function arguments and the vectors of values that are supposed to be passed as arguments.")
+  for(i in 1:length(param.list)){if(is.vector(param.list[[i]])==FALSE)stop("Parameter grids have to be vectors.")}
   if((round(M)==M&&M>0)==FALSE)stop("M must be a positive integer.")
   
   # -------- Make test run so that error messages are thrown right away and extract names of list elements
   param.names<-names(param.list)
   test.run<-eval(parse(text=paste("func(",paste(param.names,"=param.list[[",1:length(param.names),"]][1]", sep="", collapse=","),")", collapse="", sep="")))
   ret.vals<-names(test.run)
+  if(is.list(test.run)==FALSE)stop("func has to return a list with named components. each component has to be scalar.")
+  for(i in 1:length(test.run)){if(is.null(names(test.run[[i]]))==FALSE)stop("Scalars in list components cannot be named.")}
+  for(i in 1:length(test.run)){if(length(test.run[[i]])>1)stop("func has to return a list with named components. each component has to be scalar.")}
+  
   
   # --------- Check which functions that are called in func, match functions in the global environment and prepare to export those
   all<-ls(name=.GlobalEnv)
@@ -155,7 +166,7 @@ MonteCarlo<-function(func, M, param.list, ncpus=1, packages=NULL, raw=FALSE, max
       in.inner<-NULL # loop to sort out primitive functions
       for(i in 1:length(in.inner.aux)){if(is.function(tryCatch(.Primitive(in.inner.aux[i]), error=function(e)FALSE))==FALSE){if(tryCatch(is.function(eval(parse(text=in.inner.aux[i]))), error=function(e)FALSE)){in.inner<-c(in.inner,in.inner.aux[i])}}}
       new.funcs2<-c(new.funcs2,subset(in.inner,in.inner%in%all.funcs)) # list those new functions found that are defined in global environment
-      all.funcs.found<-unique(c(all.funcs.found,in.inner[apply(as.matrix(in.inner),1,exists)])) # determine which of the functions defined in inner functions do exist and append to list of all functions that may come from packages
+      if(length(in.inner)>0){all.funcs.found<-unique(c(all.funcs.found,in.inner[apply(as.matrix(in.inner),1,exists)]))} # determine which of the functions defined in inner functions do exist and append to list of all functions that may come from packages
     }
     new.funcs<-new.funcs2
     export.functions<-c(export.functions,new.funcs)
@@ -175,9 +186,9 @@ MonteCarlo<-function(func, M, param.list, ncpus=1, packages=NULL, raw=FALSE, max
   for(i in 1:length(packages)){dependencies.list<-c(dependencies.list,unlist(strsplit(as.character(packageDescription(packages[i])$Depends), split=",")))}
   dependencies.list<-unique(dependencies.list)
   dependencies.list<-gsub(" ","",dependencies.list)
-  packages<-packages[-which(packages%in%dependencies.list)] # keep only those packages that are not automatically included because they are dependencies
+  sort.out<-which(packages%in%dependencies.list)
+  if(length(sort.out)>0){packages<-packages[-sort.out]}  # keep only those packages that are not automatically included because they are dependencies
   
-  print(packages)
   
   # --------- sort param list according to order in arg.list
   arg.list<-as.list(args(func))
