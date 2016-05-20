@@ -139,8 +139,12 @@ MakeTable<-function(output, param.list, rows, cols, digits=4, collapse=NULL, Tra
   }
   
   for(lll in 1:length(output)){   # iterate over list elements to create own table for each variable returned by function fun
-  out<-round(output[[lll]], digits=digits) # select element from list.
   
+  out<-output[[lll]]  # select element from list.
+  
+  #aaa<-format(round(out, digits=digits), nsmall=digits, scientific=FALSE)
+  #out<-array(as.numeric(aaa), dim=dim(aaa), dimnames=dimnames(out))
+    
   ## drop all dimensions from out-array that are equal to 1 (and thus unneccesary) and pass parameter information to description
   pass.to.info<-NULL
   if(any(dim(out)==1)){
@@ -229,16 +233,28 @@ MakeTable<-function(output, param.list, rows, cols, digits=4, collapse=NULL, Tra
   eval(parse(text=build.string))
   erg.mat<-(inner.cols)
       
+  ###############################################
+  
+  #erg.mat<-as.matrix(format(round(erg.mat, digits=digits), digits=digits, nsmall=digits, scientific=FALSE)) 
+  
+  ###############################
+ 
   ###------  for better readability add column of NAs between blocks for each grid value of the third column variable
   if(length(cols)>2){
   count.col<-dims[2]*col.dims[1]+col.dims[1]
   rep.col<-dim(erg.mat)[2]/count.col
   startstop.col<-matrix(NA,rep.col,2)
-  for(i in 1:rep.col){startstop.col[i,]<-c((i-1)*count.col+1,i*count.col)}
+  for(i in 1:rep.col){
+    startstop.col[i,]<-c((i-1)*count.col+1,i*count.col)
+  }
   erg.mat2<-matrix(NA,nrow(erg.mat),ncol(erg.mat)+rep.col)
-  for(i in 1:rep.col){erg.mat2[,((startstop.col[i,1]+(i-1)):(startstop.col[i,2]+(i-1)))]<-erg.mat[,(startstop.col[i,1]:startstop.col[i,2])]}
+  for(i in 1:rep.col){
+    erg.mat2[,((startstop.col[i,1]+(i-1)):(startstop.col[i,2]+(i-1)))]<-erg.mat[,(startstop.col[i,1]:startstop.col[i,2])] 
+  }
   erg.mat<-erg.mat2 #format(erg.mat2, nsmall=digits)
   }
+ 
+
 
   ###------  for better readability add row of NAs between blocks for each grid value of the third row variable
   
@@ -322,7 +338,7 @@ MakeTable<-function(output, param.list, rows, cols, digits=4, collapse=NULL, Tra
   
   
   
-  erg.mat5<-erg.mat
+  erg.mat5<-erg.mat 
   if(length(rows)>1){for(i in 2:length(rows)){erg.mat5<-cbind(get(paste("rows",i, sep="")),erg.mat5)}}
   
   drop.col<-NULL
@@ -332,11 +348,17 @@ MakeTable<-function(output, param.list, rows, cols, digits=4, collapse=NULL, Tra
     
   erg.mat6<-erg.mat5[-c(nrow(erg.mat5)+1-drop.row),-c(ncol(erg.mat5)+1-drop.col)]
   erg.mat7<-matrix("&",nrow(erg.mat6),ncol(erg.mat6)*2-1)
-  erg.mat7[,seq(1,ncol(erg.mat7),2)]<-erg.mat6
   
+  ## reformat results so that the output is printed with digits digits
+  aux<-erg.mat6[-c(1,2),-c(1:length(rows))]
+  sel<-which(is.na(aux)==FALSE)
+  aux[sel]<-format(round(as.numeric(as.vector(aux)[sel]),digits=digits), nsmall=digits, scientific=FALSE)
+  erg.mat6[-c(1,2),-c(1:length(rows))]<-aux
+  #########
+ 
+  erg.mat7[,seq(1,ncol(erg.mat7),2)]<-erg.mat6
   erg.mat7[which(is.na(erg.mat7))]<-""
 
-  
   #######           Define all character strings needed for header and footer of the table in vectors            ########
   preamble<-c("\\begin{table}[h]","\n",
               "\\centering","\n",
@@ -362,7 +384,10 @@ MakeTable<-function(output, param.list, rows, cols, digits=4, collapse=NULL, Tra
   ###--------------------   Loops to print the table from its elements using cat -------------------###
   
   for(i in 1:length(preamble)){cat(preamble[i])}
-  if(length(cols)>1){for(i in 1:(length(heads)-1)){cat(rep("&",length(rows)-1),paste(cols[length(heads)+1-i]),"&&",heads[[length(heads)+1-i]],"\\\\","\n")}}
+  if(length(cols)>1){
+    for(i in 1:(length(heads)-1)){
+      cat(rep("&",length(rows)-1),paste(cols[length(heads)+1-i]),"&&",heads[[length(heads)+1-i]],"\\\\","\n")
+    }}
   for(i in 1:nrow(erg.mat7)){cat(erg.mat7[i,],"\\\\","\n")}
   for(i in 1:length(footer)){cat(footer[i])}
   if(length(output)>lll){cat("\n","\n","\n")}
