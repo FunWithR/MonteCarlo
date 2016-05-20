@@ -4,8 +4,8 @@
 \alias{MonteCarlo}
 \title{Parallized Monte Carlo simulation.}
 \usage{
-MonteCarlo(func, M, param.list, ncpus = 1, packages = NULL, raw = FALSE,
-  max.grid = 1000, timeNtest = FALSE, save.res = TRUE)
+MonteCarlo(func, M, param.list, ncpus = 1, raw = TRUE, max.grid = 1000,
+  timeNtest = FALSE, save.res = TRUE)
 }
 \arguments{
 \item{func}{is the function to be evaluated. see details. must return a list}
@@ -15,8 +15,6 @@ MonteCarlo(func, M, param.list, ncpus = 1, packages = NULL, raw = FALSE,
 \item{param.list}{a list whose components are named after the parameters of func and each component is a vector containing the desired grid values for that parameter}
 
 \item{ncpus}{number of cpus to be used. default is ncpus=1. For ncpus>1 the simulation is parallized automatically using ncpus cpu units.}
-
-\item{packages}{if ncpus>1, packages specifies which packages have been used in func, so that they can be loaded into the cluster.}
 
 \item{raw}{specifies whether the output should be averaged over the M repetitions}
 
@@ -30,7 +28,7 @@ MonteCarlo(func, M, param.list, ncpus = 1, packages = NULL, raw = FALSE,
 \code{MonteCarlo} runs a Monte Carlo simulation study for a correctly specified function and the desired parameter grids. See details.
 }
 \details{
-add details here.
+All input arguments have to be scalar, function has to return list of named scalars, list elements have to be unnamed scalars.
 }
 \examples{
 test.func<-function(n,loc,scale){
@@ -46,7 +44,6 @@ loc.grid<-seq(0,1,0.1)
 scale.grid<-1
 
 param.list=list("n"=n.grid, "loc"=loc.grid, "scale"=scale.grid)
-ret.vals<-c("decision")
 MonteCarlo(func=test.func, M=1000, param.list=param.list, ncpus=1, timeNtest=TRUE, save.res=FALSE)
 
 # Modify Test function to have slow example for parallized computation
@@ -56,14 +53,13 @@ test.func2<-function(n,loc,scale){
  stat<-sqrt(n)*mean(sample)/sd(sample)
  decision<-abs(stat)>1.96
  for(i in 1:(n)){for(j in 1:(n)){c(i,j)}}
- return(list("stat"=stat, "decision"=decision))
+ return(list("decision"=decision))
 }
 
-n.grid<-200
-loc.grid<-0#seq(0,1,0.1)
+n.grid<-100
+loc.grid<-seq(0,1,0.1)
 scale.grid<-seq(1,2,1)
 param.list=list("n"=n.grid, "loc"=loc.grid, "scale"=scale.grid)
-ret.vals<-c("decision","stat")
 MonteCarlo(func=test.func2, M=500, param.list=param.list, ncpus=2, timeNtest=FALSE)
 }
 
