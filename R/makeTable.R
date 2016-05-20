@@ -159,6 +159,7 @@ MakeTable<-function(output, param.list, rows, cols, digits=4, collapse=NULL, Tra
     if(any(p.name%in%rows)){rows<-rows[-which(rows%in%p.name)]}
     if(any(p.name%in%cols)){cols<-cols[-which(cols%in%p.name)]}
   }
+    
 
  ### escape special characters
  
@@ -174,8 +175,8 @@ MakeTable<-function(output, param.list, rows, cols, digits=4, collapse=NULL, Tra
   for(i in 1:length(all.names)){dim.names[i]<-unlist(strsplit(all.names[[i]], split="="))[1]}
   #----------------------------------------------------------------------------------------------#
   
-  if(any(dim.names%in%c(rows,cols)==FALSE))stop("rows and cols must contain all parameter names.")
-  
+  if(any(dim.names%in%c(rows,cols)==FALSE))stop("rows and cols must contain all parameter names unless the grid has only one value.")
+ 
   ###--- rearrange array so that first dimension corresponds to first variable for row selected and 
   ###--- second dimension has to correspond to first column selected
   
@@ -220,6 +221,7 @@ MakeTable<-function(output, param.list, rows, cols, digits=4, collapse=NULL, Tra
   ## between all rows of these matrices a row of NAs is added.
   ## when columns are combined in the outer loop, columns are also seperated using a column of NAs
   
+  if(length(dim(out))>2){ 
   inner.cols<-NULL
   build.string<-paste(c(
     if(loops.cols>0){paste("for(j",loops.cols:1," in 1:","col.dims[",loops.cols:1,"]){", sep="")}else{""},
@@ -232,13 +234,10 @@ MakeTable<-function(output, param.list, rows, cols, digits=4, collapse=NULL, Tra
     rep("}",loops.cols)), collapse="")
   eval(parse(text=build.string))
   erg.mat<-(inner.cols)
-      
-  ###############################################
-  
-  #erg.mat<-as.matrix(format(round(erg.mat, digits=digits), digits=digits, nsmall=digits, scientific=FALSE)) 
-  
-  ###############################
- 
+  }else{
+  erg.mat<-rbind(cbind(out,NA),NA)
+  }
+
   ###------  for better readability add column of NAs between blocks for each grid value of the third column variable
   if(length(cols)>2){
   count.col<-dims[2]*col.dims[1]+col.dims[1]
