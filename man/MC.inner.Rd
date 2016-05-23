@@ -5,7 +5,8 @@
 \title{Runs Monte Carlo. For details see documentation of wrapper function.}
 \usage{
 MC.inner(func, M, param.list, ret.vals, ncpus = 1, raw = FALSE,
-  max.grid = 1000, packages = NULL, export.functions = NULL)
+  max.grid = 1000, packages = NULL, export.functions = NULL,
+  DEBUG = FALSE)
 }
 \description{
 Runs Monte Carlo. For details see documentation of wrapper function.

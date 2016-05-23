@@ -37,7 +37,8 @@ MakeTable<-function(output, rows, cols, digits=4, Transform=NULL, func=NULL)}
 }
 \details{
 add details
-parameter grids of length one are dropped from tabel and values are added to caption
+parameter grids of length one are dropped from table (unless they are the only value in either cols or rows) and values are added to caption
+to stack list elements in rows or columns add "list" to vector \code{rows} or \code{cols}.
 }
 \examples{
 library(mvtnorm)

@@ -5,7 +5,7 @@
 \title{Parallized Monte Carlo simulation.}
 \usage{
 MonteCarlo(func, M, param.list, ncpus = 1, raw = TRUE, max.grid = 1000,
-  timeNtest = FALSE, save.res = TRUE)
+  timeNtest = FALSE, save.res = TRUE, DEBUG = FALSE)
 }
 \arguments{
 \item{func}{is the function to be evaluated. see details. must return a list}
