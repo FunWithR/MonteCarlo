@@ -1,0 +1,419 @@
+---
+title: "Vignette: The MonteCarlo Package"
+author: "Christian Leschinski"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette: The MonteCarlo Package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Monte Carlo studies are a common tool in statistics and related fields. They are used for everything from the evaluation of the finite sample properties of new statistical methods to the generation of probability distributions for risk management.
+
+The MonteCarlo package for the R language provides tools to create simulation studies quickly and easily and it also allows to summarize the results in LaTex tables. This paper gives details on the implementation of the MonteCarlo package and presents examples for its application.
+
+There are only two main functions in the package:
+
+  1. *MonteCarlo()* runs a simulation study for a user defined function and parameter grid. The package handles the generation of loops over these parameter grids and parallelizes the computation on a user specified number of CPU units. 
+  
+  1. *MakeTable()* creates LaTex tables from the output of *MonteCarlo()*. It stacks high dimensional output arrays into tables with a user specified ordering of rows and columns. 
+  
+To use the package, only the data generation for a single draw and the application of the method (or model) to this draw have to be nested in a wrapper function that is passed to *MonteCarlo()* along with the parameter grid of interest. 
+
+## A First Example
+
+The best way to get working with the MonteCarlo package is to look at an example. Here we evaluate the performance of a standard t-test of the hypothesis $H_0: \mu=0$ vs $H_1: \mu\neq0$. We are interested to see how the size and power of the test change with the sample size (*n*), the distance from the null hypothesis (*loc* for location) and the estimated standard deviation of the distribution (*scale*).
+
+The test statistic is given by
+
+$t=\frac{\bar x}{\hat \sigma}$,
+
+where $\bar x$ and $\hat \sigma$ are the arithmetic mean and the standard deviation. The sample is generated from a normal distribution.
+
+To conduct this analysis, we proceed as follows. First, we load the MonteCarlo package.
+
+```{r eval=FALSE}
+library(MonteCarlo)
+```
+```{r include=FALSE}
+library(MonteCarlo)
+```
+
+Then define the following function.
+
+```{r}
+#########################################
+##      Example: t-test
+
+# Define function that generates data and applies the method of interest
+
+ttest<-function(n,loc,scale){
+  
+  # generate sample:
+    sample<-rnorm(n, loc, scale)
+  
+  # calculate test statistic:
+    stat<-sqrt(n)*mean(sample)/sd(sample)
+  
+  # get test decision:
+    decision<-abs(stat)>1.96
+  
+  # return result:
+    return(list("decision"=decision))
+}
+```
+As discussed above, *ttest()* is formulated in a way as if we only want to generate a single test decision. The arguments of the function are the parameters we are interested in. *ttest()* carries out 4 steps: 
+
+  1. Draw a sample of *n* observations from a normal distribution with mean $\mu=loc$ and standard deviation $\sigma=scale$.
+  1. Calculate the t-statistic.
+  1. Determine the test decision.
+  1. Return the desired result in form of a list.
+
+We then define the combinations of parameters that we are interested in and collect them in a list. The elements of the lists must have the same names as the parameters for which we want to supply grids.
+
+```{r}
+
+# define parameter grid:
+
+  n_grid<-c(50,100,250,500)
+  loc_grid<-seq(0,1,0.2)
+  scale_grid<-c(1,2)
+
+# collect parameter grids in list:
+  param_list=list("n"=n_grid, "loc"=loc_grid, "scale"=scale_grid)
+```
+
+To run the simulation, the function *ttest()* and the parameter grid (*param_list*) are passed to *MonteCarlo()*, together with the desired number of Monte Carlo repetitions (*nrep=1000*).
+
+```{r eval=FALSE}
+# run simulation:
+
+  MC_result<-MonteCarlo(func=ttest, nrep=1000, param_list=param_list)
+```
+
+```{r include=FALSE}
+  MC_result<-MonteCarlo(func=ttest, nrep=1000, param_list=param_list)
+```
+
+There is no further coding required. All the mechanics of the Monte Carlo experiment are handled by the *MonteCarlo()* function.
+
+Calling summary produces a short information on the simulation.
+
+```{r}
+
+  summary(MC_result)
+```
+
+As one can see from the summary, the simulation results are stored in an array of dimension `c(4,6,2,1000)`, where the Monte Carlo repetitions are collected in the last dimension of the array. 
+
+To summarize the results in a reasonable way and to include them as a table in a paper or report, we have to represent them in a matrix. This is handled by the *MakeTable()* function, that stacks the submatrices collected in the array in the rows and columns of a matrix and prints the result in the form of code to generate a Latex table. 
+
+To determine in which order the results are stacked in rows and columns, we supply the function arguments*rows* and *cols* that are vectors of the names of the parameters in the order in which we want them to appear in the table, sorted from the inside to the outside. 
+
+```{r}
+# generate table:
+
+  MakeTable(output=MC_result, rows="n", cols=c("loc","scale"), digits=2, include_meta=FALSE)
+```
+
+To change the ordering, just change the vectors *rows* and *cols*.
+
+```{r}
+# generate table:
+
+  MakeTable(output=MC_result, rows=c("n","scale"), cols="loc", digits=2, include_meta=FALSE)
+
+```
+
+Now we can simply copy the code and add it to our paper, report or presentation. That is all. The user can focus on the design of the experiment he is interested in and the interpretation of the results.
+
+We will now discuss the details of *MonteCarlo()* and *MakeTable()* and then give further results.
+
+## The MonteCarlo() Function
+
+### Parameters of MonteCarlo()
+
+The most important argument of *MonteCarlo()* is *func*. It is a user defined function that handles the generation of data, the application of the method of interest and the evaluation of the result for a single repetition and parameter combination.
+
+*MonteCarlo()* handles the generation of loops over the desired parameter grids, the repetition of the Monte Carlo experiment for each of the parameter constellations and (if desired) the parallelization of this process.
+
+There are two important formal requirements that func has to fulfill.
+
+  1. The arguments of func have to be scalar.
+  1. The value returned by func has to be list of (unnamed) scalars (The list elements can be named).
+
+In addition to that, *func* has to work in the current workspace. That means that the required packages, data, other function, etc., have to be loaded.
+
+The second most important argument of *MonteCarlo()* is *param_list*, that also has to fulfill some conventions:
+
+  1. It is a list.
+  1. The list elements are named after the arguments of *func*.
+  1. Each element of the list is a vector or scalar.
+  1. The list contains as many elements as there are required arguments for *func*.
+
+The only other required argument of *MonteCarlo()* is *nrep*, that determines the desired number of repetitions. Apart from that, there is a number of optional arguments that are listed in Table ??. Their usage is discussed below.
+
+| Argument | Description |
+|:--------:|:-----------------------------------------------------------|
+| func | The function to be evaluated. |
+| nrep | An integer that specifies the desired number of Monte Carlo repetitions. |
+| param_list | A list whose components are named after the parameters of func and each component is a vector containing the desired grid values for that parameter |
+| ncpus | An integer specifying the number of cpus to be used. Default is ncpus=1. For ncpus>1 the simulation is parallized automatically using ncpus cpu units. |
+| max_grid | Integer that specifies for which grid size to throw an error, if grid becomes to large. Default is max_grid=1000. |
+| time_n_test	| Boolean that specifies whether the required simulation time should be estimated (useful for large simulations or slow functions). See details. Default is time_n_test=FALSE.|
+| save_res | Boolean that specifies whether the results of time_n_test should be saved to the current directory. Default is time_n_test=FALSE. |
+| debug	| Boolean that activates/deactivates the debug mode. If debug=TRUE all relevant variables are assigned to the global environment and the core loop is printed. This allows to run it manually and to see how MonteCarlo works internally. Default is debug=FALSE. |
+| raw | Boolean that specifies whether the output should be averaged over the nrep repetitions. Default is raw=TRUE. |
+
+#### ncpus - Automatized Parallelization
+
+If *ncpus* is set to an integer value larger than one, the simulation is conducted parallized on the respective number of CPUs. Make sure that the maschine you are using has the respective capacity available. The parallelization builds on the snowfall package. The setup of the cluster including the export of the necessary functions and packages to the workers are handled automatically. *MonteCarlo()* can even functions included in *func* that use other functions, and so on.
+
+#### max_grid - Warning for Excessively Large Parameter Grids
+
+Large parameter grids quickly lead to exessive time requirements for the simulation study. To prevent this from happening unintentionally (for example by thoughtless definition of *param_list*) an error is thrown, if there are more than 1000 parameter constellations. If it is desired to run the simulation nonetheless, *max_grid* has to be modified accordingly.
+
+#### time_n_test - Estimate of the Time Required for the Simulation
+
+For the estimation of the required simulation time, a separate simulation is run on a reduced grid that only contains the extreme points for each parameter, e.g. the smallest and the largest sample size. This test simulation is carried out with nrep/10 repetitions and the required simulation time is estimated by a linear interpolation. Since the computational complexity is usually a convex function of the sample size and the dimension of the process, this approach tends to overestimate the time required. Nevertheless, it provides an upper bound an a reasonable estimate of the order of magnitude of the time required (minutes, hours or days?).
+
+#### save_res - Save the Results of the Test Run
+
+If *time_n_test* is set to *TRUE*, *save_res* determines whether the results of the smaller test simulation should be saved in the current working directory. This can be usefull for larger simulations, where the simulation takes a lot of time and it can be usefull to have a look at the preliminary results to stop the main simulation if something is not right.
+
+#### debug - Run Simulation in Global Environment to Find Bugs
+
+Even though *func* might be programmed and tested carefully, there can be bugs that only become visible if the simulation is run in parallel. To find those, *MonteCarlo()* assigns all relevant variables to the global environment and prints out the core loop that it generated, so that the simulation can be run "by hand" in the global environment. This also allows the user to see how *MonteCarlo()* is working internally. We use this below.
+
+#### raw - Summarize the Output by Averaging Over the nrep Repetitions
+
+Sometimes it is not intended to run a large simulation study and to document the results in a latex document. Instead one might want to conduct a little experiment and immediately see the result. If this is desired one can set *raw=FALSE* and the output array will be aggregated by taking averages of the results for all *nrep* repetitions. For small parameter grids these can be viewed and interpreted directly.
+
+### The Recipe Behind MonteCarlo(): What happens internally ?
+
+To see how *MonteCarlo()* works internally, we return to the example and turn on the debug mode.
+
+```{r}
+  MC_result<-MonteCarlo(func=ttest, nrep=1000, param_list=param_list, debug=TRUE)
+```
+
+As one can see, a loop is created for every parameter in *func*. For each iteration of the loops, the arguments of func are set to a different value in the parameter grid. For *ncpus>1* a cluster is initiated and the required functions and parameters are exported to the cluster. In addition to that, the required packages are loaded on the slaves.
+Then, for each parameter constellation, the *nrep* repetitions of the simulation are run in parallel and the results are saved in the *results$decision* array. If the list returned by *func* had more than one element, there would be more than one array in the list of results.
+
+## MakeTable()
+
+As discussed above, the *MakeTable()* function handles the generation of Latex tables from the output of *MonteCarlo()*. Like the latter, it only has three required arguments. The first one, *output* is a *MonteCarlo* object returned by the equally named function. The second and third are *rows* and *cols* that determine the ordering of the resulting table (from the inside to the outside). 
+
+If *func* returns a list with more than one element, each list element is shown in a separate table by default. This behavior can be modified by including the string "list" at the desired position in either *rows* or *cols*. 
+
+Similar to *MonteCarlo()*, *MakeTable()* has a number of optional arguments that allow to modify the appearance of the generated table and the way the simulation results are summarized. An overview of the function arguments is given in the table below. Details will be discussed thereafter.
+ 
+### Parameters
+
+
+|   Argument  |   Description  |
+|:-----------:|:-----------------------------------------------------|
+| output | list of class MonteCarlo generated by MonteCarlo |
+| rows	| vector of parameter names to be stacked in the rows of the table. Ordered from inner to outer.|
+| cols | vector of parameter names to be stacked in the cols of the table. Ordered from inner to outer.|
+| digits | number of digits displayed in table. Default is digits=4.|
+| collapse | optional list of the same length as output giving the names of functions to be applied to the repective components of output when collapsing the results to a table. By default means are taken. Another example could be sd().|
+| transform | optional argument to transform the output table (for example from MSE to RMSE). If a function is supplied it is applied to all tables. Alternatively, a list of functions can be supplied that has the same length as output. For tables that are supposed to stay unchanged set list element to NULL. |
+| include\_meta | booloean that determines whether the meta data provided by summary() is included in comments below the table. Default is include_meta==TRUE.|
+| width_mult | scaling factor for width of the output table. Default is width_mult=1.|
+| partial_grid | an optional list with the elements named after of the parameters for which only a part of the grid values is supposed to be included in the table. Each component of the list is a vector that specifies the grid values of interest.|
+
+
+#### digits - Determine the Number of Digits Printed
+
+*digits* simply specifies the number of digits to which results are rounded in the table. In contrast to the standard behavior in R, the results will be printed with exactly this number of digits. Trailing zeros will not be dropped. For example, if *digits=2*, 1 will be displayed as 1.00. This makes for nicer formatting of the resulting tables.
+
+#### collapse - Modify the Way the Simulation Results are Aggregated
+
+For a given parameter constellation, there will be *nrep* simulation results in *output*. By default these are aggregated using *mean()*. Therefore, if *func* returns a test decision with the result either specified as 0 (for non-rejection) or 1 (for rejection), as it was the case in the *ttest()*-example, the results will be aggregated to represent the rejection frequency (size or power - depending on the DGP and the parameter constellation). Similarly, if *func* returns a point estimate, the mean of the estimated parameter is given in the table. By returning the deviation of the estimated parameter from its true value in *func* the table will represent the bias. By the same principle, MSEs can be calculated if *func* returns squares of these values.
+
+Even though the standard behavior is very versatile, one might be interested in a different aspect of the simulated distribution - for example a quantile such as the median. Therefore the *collapse* argument allows to supply other functions that can be used to aggregate the output. An example could be median() or sd(). These functions are supplied to *collapse* in form of a list of the same length as the output of *func*. Note also that the functions that are specified have to return scalars. 
+
+An example for the use of *collapse* is given below in the Section "Further Examples".
+
+#### transform - Apply Transformations to the Generated Tables
+
+Another option is to apply a transformation directly to the table. This can be usefull in situations where the resulting numbers are very small or very large so that one wants to scale them by a power of 10 or 1/10. Another example would be if one wants to show root mean squared errors instead of MSEs.
+
+As for *collapse*, an example for the use of *transform* is given in the Section "Further Examples".
+
+#### include_meta - Include Information from summary() in Comments Under the Table
+
+By default the information returned by summary() such as the specification of *func*, the parameter grids used in the simulation, the number of repetitions *nrep* and the required simulation time are included in comments below the table. This is meant as a form of automatic documentation that allows for the replication of results in reports, papers or presentations even if they were generated some time ago.
+
+If this is not in the interest of the user - or the comments are just perceived as lengthy, this feature can be switched off by setting *include_meta=FALSE*.
+
+
+#### width_mult - Modify Width of the Table Relative to Text
+
+Without further modifications the Latex tables returned by *MakeTable()* are scaled to have the same width as the text in the document. This can be modified directly in the Latex code that is returned, but if the user already knows in advance that the table should be smaller, this can already specified by setting *width_mult* to a fraction that specifies this.
+
+
+#### partial_grid - Print Table Only for Subsets of the Original Parameter Grid
+
+Sometimes situations will occur in which one is only interested in a subset of the parameter grid originally considered and passed to *MonteCarlo()*. For example because it turns out that the resulting table is very larger, or because the results are not very informative for some values of the grid (e.g. the power of a test remains at 1 if the sample size is increased further).
+
+To drop unwanted parts of the table, a list can be supplied to *partial_grid*, that specifies which elements of which parameter vector should remain part of the table. The list has to have as many elements as there are parameters in *param_list* and each element has to be named after the respective parameter. Each list element has to be a vector of natural numbers specifying the positions of desired values in the respective parameter vector. An example is given below in the Section "Further Examples".
+
+## MergeResults()
+
+*MergeResults()* is a utility function that allows to merge the MonteCarlo objects generated from multiple simulations using the same *func* and *param_list*. This can be usefull if a first simulation is run with a small *nrep* to test and more reliable results are produced later with a larger *nrep*, or if multiple machines are used.
+
+There are only two required arguments. The first one, *path* specifies the path of the directory that contains the files that are supposed to be merged. The second one, *identifier* is a string that identifies which files should be merged. The string should be a substring of the variable names of all files that are supposed to be merged, but it cannot be contained in the filenames of other files in the specified directory.
+
+
+## Further Examples: Comparison of Two Estimators
+
+In the previous sections we focused on the t-test as an example for the use of *MonteCarlo()* and *MakeTable()*. Here, we consider a second example: the evaluation of estimators. In particular, we compare the mean and the median as estimators for the expected value of a Gaussian random variable. This example serves to illustrate the use of the optinal arguments of the *MakeTable()* function.
+
+### Multiple Outputs
+
+First, we specify the function of interest. *mean_vs_median()* defined below generates a sample of *n* normal distributed random variables with standard deviation *scale*. It then calulates the mean and the median and returns both in a list. Therefore, in contrast to the t-test example used above, this function returns a list with two elements.
+
+```{r}
+
+mean_vs_median<-function(n,scale){
+
+# generate sample
+sample<-rnorm(n, 0, scale)
+
+# calculate estimators
+mean_sample<-mean(sample)
+median_sample<-median(sample)
+
+# return results
+return(list("mean"=mean_sample, "median"=median_sample))
+}
+
+n_grid<-c(50, 250, 500)
+scale_grid<-c(1, 2, 4)
+
+param_list=list("n"=n_grid, "scale"=scale_grid)
+```
+
+```{r eval=FALSE}
+# run simulation:
+
+erg_mean_median<-MonteCarlo(func=mean_vs_median, nrep=1000, param_list=param_list)
+```
+```{r include=FALSE}
+erg_mean_median<-MonteCarlo(func=mean_vs_median, nrep=1000, param_list=param_list)
+```
+
+Like before, we pass the function and the parameter grid to *MonteCarlo()* and then feed the results to *MakeTable()*.
+
+```{r}
+MakeTable(output=erg_mean_median, rows="n", cols="scale", digits=2, include_meta=FALSE)
+```
+
+As one can see, the default behavior of *MakeTable()* is to print separate tables for each value in the list returned by *func*. 
+
+### Merge Several Outputs Into One Table
+
+To include both, the estimates for the mean and median in the same table, we simply include the string "list" in either *rows* or *cols*. Here, we choose to include it as the last element of *cols*, to have the results for *mean()* and *median()* next to each other.
+
+```{r}
+
+MakeTable(output=erg_mean_median, rows=c("n"), cols=c("scale","list"), digits=2, include_meta=FALSE)
+
+```
+
+### Generation of Tables for Partial Parameter Grids
+
+For large parameter grids, one might want to focus on a subset of the results. To achive this, just include the optinal argument *partial_grid*. Here we the grids for *n* and *scale* both had three values and we only want to use the largest and the smallest values in the grids. We therefore supply a list with the names of the parameters and vectors specifying the positions of the values that we want to keep in the grid.
+
+```{r}
+# use partial_grid
+
+MakeTable(output=erg_mean_median, rows="n", cols=c("scale","list"), digits=2,
+          partial_grid=list("n"=c(1,3), "scale"=c(1,3)), include_meta=FALSE)
+
+```
+
+
+###	Transformations of the Output
+
+The results in the tables above are hard to interpret, due to their scale. Both the *mean()* and *median()* have a bias that is close to zero, and there is barely a difference in the rounded values. However, if we change the number of digits displayed, we see that the bias of the *mean()* tends to be smaller than that of the *median()*.
+
+```{r}
+MakeTable(output=erg_mean_median, rows=c("n"), cols=c("scale","list"), digits=4, include_meta=FALSE)
+```
+
+A simple way to make these differences visible without displaying to many digits is to change the unit, for exampe by multiplying all results with 100. This is where the *transform* argument of *MakeTable()* comes handy.
+
+```{r}
+scale_table_100<-function(x){x*100}
+
+MakeTable(output=erg_mean_median, rows=c("n"), cols=c("scale","list"), digits=2, transform=list(scale_table_100, function(x){x*100}), include_meta=FALSE)
+```
+
+### Collapse
+
+Since both estimators - the *mean()* and the *median()* are unbiased in this setup, comparing them by their bias might not be the most interesting analysis. Instead we might be interested in other aspects of their distributions - for example their standard deviations. To modify the function used by *MakeTable()* to summarize the result from the *nrep* repetitions of the experiment, a list can be passed to *collapse* that contains the names of the functions that are supposed to be used to collapse the single realisations of the estimators in a meaningful table. Here we use *sd()*, since we know that *mean()* is the more efficient estimator in this setup.
+
+```{r}
+MakeTable(output=erg_mean_median, rows="n", cols=c("scale", "list"), digits=2, collapse=list("sd", "sd"), include_meta=FALSE)
+```
+
+Now, it is easy to see, that even though the bias terms are very similar, the *mean()* has a smaller variance than the *median()*.
+
+## Non-Nested Data Generating Processes
+
+One of the key concepts behind the design of *MonteCarlo()* is that it is generally assumed that the samples are generated from a data generated process that nests all the situations of interest. This is also the case of the examples discussed so far, where the data is generated from a normal distribution and only the standard deviation of the distribution and the number of observations change.
+
+However, this does not mean that *MonteCarlo()* cannot handle non-nested data generating processes. As an example, we consider the case where we want to compare the standard deviation of the *mean()* and the *median()* as we did above, but for samples from a normal distribution and from a uniform distribution. These are clearly non-nested. To deal with this situation, we include *DGP* as an additional argument in *mean_vs_median()* and create a case disticntion, so that the value of *DGP* determines from which distribution the sample is generated. We then include the possible values of *DGP* in an additional parameter grid.
+
+```{r}
+mean_vs_median<-function(n,scale,DGP){
+  
+  # generate sample
+  
+  if(DGP=="normal"){sample<-rnorm(n, 0, scale)}
+  
+  if(DGP=="uniform"){
+    b<-scale/(2*sqrt(1/12))
+    sample<-runif(n, -b, b)
+  }
+  
+  # calculate estimators
+  mean_sample<-mean(sample)
+  median_sample<-median(sample)
+  
+  # return results
+  return(list("mean"=mean_sample, "median"=median_sample))
+}
+
+n_grid<-c(50, 250, 500)
+scale_grid<-c(1, 2, 4)
+DGP_grid<-c("normal", "uniform")
+
+param_list=list("n"=n_grid, "scale"=scale_grid, "DGP"=DGP_grid)
+```
+
+Note that the width of the uniform distribution is specified so that both the Gaussian and the uniform distribution have a standard deviation of *scale*.
+
+```{r eval=FALSE}
+# run simulation:
+
+erg_mean_median<-MonteCarlo(func=mean_vs_median, nrep=1000, param_list=param_list)
+```
+```{r include=FALSE}
+erg_mean_median<-MonteCarlo(func=mean_vs_median, nrep=1000, param_list=param_list)
+```
+
+After running the simulation, we obtain the following results.
+
+```{r}
+MakeTable(output=erg_mean_median, rows=c("n","DGP"), cols=c("scale", "list"), digits=2, collapse=list("sd", "sd"), include_meta=FALSE)
+```
+
+We can see that the standard deviation of the *median()* is far larger for the uniform distribution whereas that of the *mean()* remains nearly unchanged.
+
+This example shows that *MonteCarlo()* is very versatile. Depending on the specification of *func*, it is possible to deal with non-nested DGPs. Similarly, multivariate outputs could be handled by splitting them in several elements and returning them seperately. 
+

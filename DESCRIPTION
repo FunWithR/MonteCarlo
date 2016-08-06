@@ -1,10 +1,21 @@
 Package: MonteCarlo
 Type: Package
 Title: Automatically runs parallized Monte Carlo simulations.
-Version: 1.0
-Date: 2015-10-21
+Version: 1.0.0.9000
+Date: 2016-07-21
 Author: Christian Hendrik Leschinski
 Maintainer: Christian Hendrik Leschinski <leschinski@statistik.uni-hannover.de>
-Description: The Monte Carlo package simplifies Monte Carlo simulation studies by automatically setting up loops to run over parameter grids and parallizing the Monte Carlo repetitions.
-License: Private. Do not redistribute or use without permission.
-Depends: snowfall, codetools
+Description: The Monte Carlo package simplifies Monte Carlo simulation studies
+    by automatically setting up loops to run over parameter grids and parallizing
+    the Monte Carlo repetitions.
+License: GPL-2
+Depends:
+    R (>= 3.1.2)
+Imports:
+    abind(>= 1.4-0),
+    codetools(>= 0.2-14),
+    snowfall(>= 1.84-6)
+RoxygenNote: 5.0.1
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr
