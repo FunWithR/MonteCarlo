@@ -23,7 +23,7 @@ The idea behind this approach is to allow the user full control and flexibility 
 
 The best way to get working with the MonteCarlo package is to look at an example. Suppose we want to evaluate the performance of a standard t-test for the hypothesis $H_0: \mu=0$ vs $H_1: \mu\neq0$. We are interested to see how the size and power of the test change with the sample size (*n*), the distance from the null hypothesis (*loc* for location) and the standard deviation of the distribution (*scale*).
 
-The test statistic is given by $\frac{\bar x}{\hat \sigma}$, where $\bar x$ and $\hat \sigma$ are the arithmetic mean and the estimated standard deviation. The sample is generated from a normal distribution.
+The test statistic is given by $\frac{\bar{x}}{\hat{\sigma}}$, where $\bar{x}$ and $\hat{\sigma}$ are the arithmetic mean and the estimated standard deviation. The sample is generated from a normal distribution.
 
 To conduct this analysis, we proceed as follows. First, we load the MonteCarlo package.
 

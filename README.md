@@ -20,7 +20,7 @@ A First Example
 
 The best way to get working with the MonteCarlo package is to look at an example. Suppose we want to evaluate the performance of a standard t-test for the hypothesis \(H_0: \mu=0\) vs \(H_1: \mu\neq0\). We are interested to see how the size and power of the test change with the sample size (*n*), the distance from the null hypothesis (*loc* for location) and the standard deviation of the distribution (*scale*).
 
-The test statistic is given by \(\frac{\bar x}{\hat \sigma}\), where \(\bar x\) and \(\hat \sigma\) are the arithmetic mean and the estimated standard deviation. The sample is generated from a normal distribution.
+The test statistic is given by \(\frac{\bar{x}}{\hat{\sigma}}\), where \(\bar{x}\) and \(\hat{\sigma}\) are the arithmetic mean and the estimated standard deviation. The sample is generated from a normal distribution.
 
 To conduct this analysis, we proceed as follows. First, we load the MonteCarlo package.
 
@@ -105,7 +105,7 @@ Calling summary produces a short information on the simulation.
     ##     return(list("decision"=decision))
     ## }
     ## 
-    ## Required time: 12.82 secs for nrep = 1000  repetitions on 1 CPUs 
+    ## Required time: 11.94 secs for nrep = 1000  repetitions on 1 CPUs 
     ## 
     ## Parameter grid: 
     ## 
@@ -136,10 +136,10 @@ To determine in which order the results are stacked in rows and columns, we supp
     ##  scale && \multicolumn{ 6 }{c}{ 1 } &  & \multicolumn{ 6 }{c}{ 2 } &  &  \\ 
     ## n/loc &  & 0 & 0.2 & 0.4 & 0.6 & 0.8 & 1 &  & 0 & 0.2 & 0.4 & 0.6 & 0.8 & 1 \\ 
     ##  &  &  &  &  &  &  &  &  &  &  &  &  &  &  \\ 
-    ## 50 &  & 0.06 & 0.30 & 0.81 & 0.98 & 1.00 & 1.00 &  & 0.06 & 0.11 & 0.29 & 0.59 & 0.80 & 0.93 \\ 
-    ## 100 &  & 0.04 & 0.53 & 0.97 & 1.00 & 1.00 & 1.00 &  & 0.06 & 0.18 & 0.52 & 0.85 & 0.99 & 1.00 \\ 
-    ## 250 &  & 0.05 & 0.89 & 1.00 & 1.00 & 1.00 & 1.00 &  & 0.05 & 0.33 & 0.89 & 1.00 & 1.00 & 1.00 \\ 
-    ## 500 &  & 0.05 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 &  & 0.06 & 0.63 & 0.99 & 1.00 & 1.00 & 1.00 \\ 
+    ## 50 &  & 0.06 & 0.29 & 0.80 & 0.99 & 1.00 & 1.00 &  & 0.05 & 0.12 & 0.30 & 0.59 & 0.79 & 0.94 \\ 
+    ## 100 &  & 0.07 & 0.53 & 0.98 & 1.00 & 1.00 & 1.00 &  & 0.06 & 0.18 & 0.53 & 0.84 & 0.98 & 1.00 \\ 
+    ## 250 &  & 0.05 & 0.87 & 1.00 & 1.00 & 1.00 & 1.00 &  & 0.05 & 0.38 & 0.88 & 1.00 & 1.00 & 1.00 \\ 
+    ## 500 &  & 0.06 & 0.99 & 1.00 & 1.00 & 1.00 & 1.00 &  & 0.06 & 0.59 & 0.99 & 1.00 & 1.00 & 1.00 \\ 
     ## \\
     ## \\
     ## \hline\hline
@@ -163,15 +163,15 @@ To change the ordering, just change the vectors *rows* and *cols*.
     ## \hline\hline\\\\
     ## scale & n/loc &  & 0 & 0.2 & 0.4 & 0.6 & 0.8 & 1 \\ 
     ##  &  &  &  &  &  &  &  &  \\ 
-    ## \multirow{ 4 }{*}{ 1 } & 50 &  & 0.06 & 0.30 & 0.81 & 0.98 & 1.00 & 1.00 \\ 
-    ##  & 100 &  & 0.04 & 0.53 & 0.97 & 1.00 & 1.00 & 1.00 \\ 
-    ##  & 250 &  & 0.05 & 0.89 & 1.00 & 1.00 & 1.00 & 1.00 \\ 
-    ##  & 500 &  & 0.05 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 \\ 
+    ## \multirow{ 4 }{*}{ 1 } & 50 &  & 0.06 & 0.29 & 0.80 & 0.99 & 1.00 & 1.00 \\ 
+    ##  & 100 &  & 0.07 & 0.53 & 0.98 & 1.00 & 1.00 & 1.00 \\ 
+    ##  & 250 &  & 0.05 & 0.87 & 1.00 & 1.00 & 1.00 & 1.00 \\ 
+    ##  & 500 &  & 0.06 & 0.99 & 1.00 & 1.00 & 1.00 & 1.00 \\ 
     ##  &  &  &  &  &  &  &  &  \\ 
-    ## \multirow{ 4 }{*}{ 2 } & 50 &  & 0.06 & 0.11 & 0.29 & 0.59 & 0.80 & 0.93 \\ 
-    ##  & 100 &  & 0.06 & 0.18 & 0.52 & 0.85 & 0.99 & 1.00 \\ 
-    ##  & 250 &  & 0.05 & 0.33 & 0.89 & 1.00 & 1.00 & 1.00 \\ 
-    ##  & 500 &  & 0.06 & 0.63 & 0.99 & 1.00 & 1.00 & 1.00 \\ 
+    ## \multirow{ 4 }{*}{ 2 } & 50 &  & 0.05 & 0.12 & 0.30 & 0.59 & 0.79 & 0.94 \\ 
+    ##  & 100 &  & 0.06 & 0.18 & 0.53 & 0.84 & 0.98 & 1.00 \\ 
+    ##  & 250 &  & 0.05 & 0.38 & 0.88 & 1.00 & 1.00 & 1.00 \\ 
+    ##  & 500 &  & 0.06 & 0.59 & 0.99 & 1.00 & 1.00 & 1.00 \\ 
     ## \\
     ## \\
     ## \hline\hline
