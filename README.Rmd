@@ -32,6 +32,7 @@ library(MonteCarlo)
 ```
 ```{r include=FALSE}
 library(MonteCarlo)
+set.seed(1234)
 ```
 
 Then define the following function.
