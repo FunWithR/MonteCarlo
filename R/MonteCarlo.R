@@ -151,7 +151,7 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=1, max_grid=1000, pac
 #' @param time_n_test Boolean that specifies whether the required simulation time should be estimated (useful for large simulations or slow functions). 
 #' See details. Default is \code{time_n_test=FALSE}.
 #' @param save_res Boolean that specifies whether the results of \code{time_n_test} should be saved to the current directory. 
-#' Default is \code{time_n_test=FALSE}.
+#' Default is \code{save_res=FALSE}.
 #' @param debug Boolean that activates/deactivates the debug mode. If \code{debug=TRUE} all relevant variables are assigned to the global environment
 #' and the core loop is printed. This allows to run it manually and to see how MonteCarlo works internally. Default is \code{debug=FALSE}.
 #' @param export_also list specifying additional objects that are supposed to be exported to the cluster. 
