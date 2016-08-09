@@ -186,7 +186,6 @@ MakeTable<-function(output, rows, cols, digits=4, collapse=NULL, transform=NULL,
   
   # apply function(s) passed through transform to output
 
-
   if(is.null(transform)==FALSE){
     if(any(c(is.function(transform), is.list(transform)))==FALSE)stop("transform must be either NULL, a function or a list of functions!")
     if(is.list(transform)){if(length(transform)!=length(output))stop("List supplied as transform must be of the same lengths as output.")}
@@ -220,7 +219,7 @@ MakeTable<-function(output, rows, cols, digits=4, collapse=NULL, transform=NULL,
   
   for(lll in 1:length(output)){   # iterate over list elements to create own table for each variable returned by function fun
   
-  out<-output[[lll]]  # select element from list.
+  out<-output[[lll]]  # select element from list
   
   if(is.null(partial_grid)==FALSE){
     sel<-partial_grid
@@ -231,6 +230,7 @@ MakeTable<-function(output, rows, cols, digits=4, collapse=NULL, transform=NULL,
     array_selector<-paste("[", paste(array_selector, collapse=","),"]", collapse="")
     eval(parse(text=paste("out<-out", array_selector, sep="")))
   }
+  
   
   if(length(dim(out))==1){
     if(is.null(rows)){
@@ -255,6 +255,18 @@ MakeTable<-function(output, rows, cols, digits=4, collapse=NULL, transform=NULL,
   if(any(dim(out)==1)){
     
     select<-which(dim(out)==1)
+    
+    #------------      Make Sure that there is always at least one element in rows and cols     ---------------#
+    if(all(rows%in%names(param_list)[select])){
+      select<-select[-1]
+      warning("All parameter grids in rows have only one element. Therefore they are superfluous.")
+      }
+    if(all(cols%in%names(param_list)[select])){
+      select<-select[-1]
+      warning("All parameter grids in cols have only one element. Therefore they are superfluous.")
+    }
+    #-----------------------------------------------------------------------------------------------------------#
+    
     if(length(select)>0){
     
       pass_to_info<-as.character(dimnames(out)[select]) # add parameter info about dropped dimensions to caption
@@ -418,6 +430,7 @@ MakeTable<-function(output, rows, cols, digits=4, collapse=NULL, transform=NULL,
       help_rows1<-eval(parse(text=paste("rep(c(paste(",paste(rows[1],"_grid",sep=""),"),NA),1)",sep="")))
   }
   }
+  
   if(length(rows)>2){rows1<-rep(c(help_rows1,NA),prod(row_dims[-1]))}else{rows1<-help_rows1}
 
   # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
@@ -430,15 +443,21 @@ MakeTable<-function(output, rows, cols, digits=4, collapse=NULL, transform=NULL,
   
   ################################################################################
   
+  ##-----------------------    In Case of multiple layers of rows or cols create additional headers   ---------------##
+  
+  ## more than one layer of columns
   if(length(cols)>1){
-  help_head2<-eval(parse(text=paste("paste('\\\\multicolumn{'",",","dims[2]",",","'}{c}{'",",",paste(cols[2],"_grid",sep=""),",","'}'",")")))
-  help_head2b<-rep(NA,2*col_dims[1]-1)
-  help_head2b[seq(1,length(help_head2b),2)]<-help_head2
-  head2<-rep(c(help_head2b,rep(NA,2)),prod(col_dims[-1]))
-  heads[[2]]<-head2
+    help_head2<-eval(parse(text=paste("paste('\\\\multicolumn{'",",","dims[2]",",","'}{c}{'",",",paste(cols[2],"_grid",sep=""),",","'}'",")")))
+    help_head2b<-rep(NA,2*col_dims[1]-1)
+    help_head2b[seq(1,length(help_head2b),2)]<-help_head2
+    if(length(col_dims[-1])>0){
+      head2<-rep(c(help_head2b,rep(NA,2)),prod(col_dims[-1]))}else{head2<-help_head2b}
+    heads[[2]]<-head2
   }
   
   n_multicol<-c(1,dims[2])
+  
+  ## more than two layers of columns
   if(length(cols)>2){
     for(i in 3:length(cols)){
       col_mult<-if(i==3){1}else{2}
@@ -450,6 +469,7 @@ MakeTable<-function(output, rows, cols, digits=4, collapse=NULL, transform=NULL,
     }
   }
 
+  ## more than one layer of rows
   if(length(rows)>1){
     help_rows2<-eval(parse(text=paste("paste('\\\\multirow{'",",","dims[1]",",","'}{*}{'",",",paste(rows[2],"_grid",sep=""),",","'}'",")"))) 
     help_rows2b<-rep(NA,length(help_rows2)*(dims[1]+1))
@@ -462,6 +482,8 @@ MakeTable<-function(output, rows, cols, digits=4, collapse=NULL, transform=NULL,
   }
   
   n_multirow<-c(1,dims[1])
+  
+  ## more than two layers of rows
   if(length(rows)>2){
     for(i in 3:length(rows)){
       row_mult<-if(i==3){1}else{2}
@@ -479,7 +501,8 @@ MakeTable<-function(output, rows, cols, digits=4, collapse=NULL, transform=NULL,
       assign(paste("rows",i,sep=""),c(rows[i],NA,rep(get(paste("rows_help",i,sep="")),prod(row_dims[-(1:(i-1))]))))
     }
   }
-
+  ##---------------------------------------------------------------------------------##
+  
   erg_mat5<-erg_mat 
   if(length(rows)>1){for(i in 2:length(rows)){erg_mat5<-cbind(get(paste("rows",i, sep="")),erg_mat5)}}
   
@@ -546,6 +569,7 @@ MakeTable<-function(output, rows, cols, digits=4, collapse=NULL, transform=NULL,
   
   } # finish loop over all list elements in output of MonteCarlo()
  
+  ###-------- Print information provided by summary.MonteCarlo(output) in comments below table.
   if(include_meta==TRUE){
     cat("%\n")
     if(is.null(transform)){cat("%  transform = NULL","\n")}else{cat("%  transform: ",paste(unlist(transform), collapse=", "),"\n")}
@@ -556,6 +580,8 @@ MakeTable<-function(output, rows, cols, digits=4, collapse=NULL, transform=NULL,
       cat("% ",summ_out[[i]],"\n")
     }
   }
+  ###---------------------------------------
+  # End function.
 }
 
 #######################################################################################################################################
