@@ -21,9 +21,7 @@ The idea behind this approach is to allow the user full control and flexibility 
 
 ## A First Example
 
-The best way to get working with the MonteCarlo package is to look at an example. Suppose we want to evaluate the performance of a standard t-test for the hypothesis $H_0: \mu=0$ vs $H_1: \mu\neq0$. We are interested to see how the size and power of the test change with the sample size (*n*), the distance from the null hypothesis (*loc* for location) and the standard deviation of the distribution (*scale*).
-
-The test statistic is given by $\frac{\bar{x}}{\hat{\sigma}}$, where $\bar{x}$ and $\hat{\sigma}$ are the arithmetic mean and the estimated standard deviation. The sample is generated from a normal distribution.
+The best way to get working with the MonteCarlo package is to look at an example. Suppose we want to evaluate the performance of a standard t-test for the hypothesis that the mean is equal to zero. We are interested to see how the size and power of the test change with the sample size (*n*), the distance from the null hypothesis (*loc* for location) and the standard deviation of the distribution (*scale*). The sample is generated from a normal distribution.
 
 To conduct this analysis, we proceed as follows. First, we load the MonteCarlo package.
 
@@ -60,7 +58,7 @@ ttest<-function(n,loc,scale){
 ```
 As discussed above, *ttest()* is formulated in a way as if we only want to generate a single test decision. The arguments of the function are the parameters we are interested in. *ttest()* carries out 4 steps: 
 
-  1. Draw a sample of *n* observations from a normal distribution with mean $\mu=loc$ and standard deviation $\sigma=scale$.
+  1. Draw a sample of *n* observations from a normal distribution with mean *loc* and standard deviation *scale*.
   1. Calculate the t-statistic.
   1. Determine the test decision.
   1. Return the desired result in form of a list.
