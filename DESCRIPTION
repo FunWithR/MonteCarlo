@@ -1,6 +1,6 @@
 Package: MonteCarlo
 Type: Package
-Title: Automatically runs parallized Monte Carlo simulations.
+Title: Automatically runs parallized Monte Carlo simulations
 Version: 1.0.0.9000
 Date: 2016-07-21
 Author: Christian Hendrik Leschinski
@@ -8,6 +8,8 @@ Maintainer: Christian Hendrik Leschinski <leschinski@statistik.uni-hannover.de>
 Description: The Monte Carlo package simplifies Monte Carlo simulation studies
     by automatically setting up loops to run over parameter grids and parallizing
     the Monte Carlo repetitions.
+URL: http://github.com/FunWithR/MonteCarlo
+BugReports: http://github.com/FunWithR/MonteCarlo/issues
 License: GPL-2
 Depends:
     R (>= 3.1.2)
