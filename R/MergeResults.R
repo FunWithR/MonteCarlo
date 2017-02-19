@@ -12,6 +12,7 @@
 #' \donttest{out<-MergeResults(identifier="MonteCarloResults", path="C:/Users/")
 #' summary(out)}
 #' @export
+#' 
 MergeResults<-function(identifier,path){
   
   old_path<-getwd()
