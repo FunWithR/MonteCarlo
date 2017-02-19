@@ -2,7 +2,7 @@
 % Please edit documentation in R/MonteCarlo.R
 \name{MonteCarlo}
 \alias{MonteCarlo}
-\title{Parallized Monte Carlo simulation.}
+\title{Parallized Monte Carlo Simulation}
 \usage{
 MonteCarlo(func, nrep, param_list, ncpus = 1, max_grid = 1000,
   time_n_test = FALSE, save_res = FALSE, debug = FALSE, raw = TRUE,
@@ -13,10 +13,10 @@ MonteCarlo(func, nrep, param_list, ncpus = 1, max_grid = 1000,
 
 \item{nrep}{An integer that specifies the desired number of Monte Carlo repetitions.}
 
-\item{param_list}{A list whose components are named after the parameters of func and each component is a vector containing the desired grid values for that parameter}
+\item{param_list}{A list whose components are named after the parameters of \code{func} and each component is a vector containing the desired grid values for that parameter}
 
-\item{ncpus}{An integer specifying the number of cpus to be used. Default is ncpus=1. 
-For ncpus>1 the simulation is parallized automatically using ncpus cpu units.}
+\item{ncpus}{An integer specifying the number of cpus to be used. Default is \code{ncpus=1}. 
+For \code{ncpus>1} the simulation is parallized automatically using \code{ncpus} cpu units.}
 
 \item{max_grid}{Integer that specifies for which grid size to throw an error, if grid becomes to large. Default is \code{max_grid=1000}.}
 
@@ -31,11 +31,11 @@ and the core loop is printed. This allows to run it manually and to see how Mont
 
 \item{raw}{Boolean that specifies whether the output should be averaged over the nrep repetitions. Default is \code{raw=TRUE}.}
 
-\item{export_also}{list specifying additional objects that are supposed to be exported to the cluster. 
+\item{export_also}{List specifying additional objects that are supposed to be exported to the cluster. 
 This allows to export data or to bypass the automatic export of functions. Default is \code{export_also=NULL}. See details.}
 }
 \value{
-A list of type MonteCarlo.
+A list of type \code{MonteCarlo}.
 }
 \description{
 \code{MonteCarlo} runs a Monte Carlo simulation study for a correctly specified function and the desired parameter grids. 
@@ -56,14 +56,14 @@ There are two important formal requirements that \code{func} has to fulfill.
 For the estimation of the required simulation time, 
 a separate simulation is run on a reduced grid that only contains the extreme points 
 for each parameter, e.g. the smallest and the largest sample size. 
-This test simulation is carried out with \math{nrep/10} repetitions and the required 
+This test simulation is carried out with \code{nrep/10} repetitions and the required 
 simulation time is estimated by a linear interpolation. Since the computational complexity is
 usually a convex function of the sample size and the dimension of the process, this approach 
 tends to overestimate the time required. 
 
-export_also allows to export data to the cluster in case parallized computations on a dataset are desired. 
+\code{export_also} allows to export data to the cluster in case parallized computations on a dataset are desired. 
 It also allows to bypass the automatic export of functions and packages. 
-To manually export a function or dataset or to load a package, pass a list to export_also where the list element is named
+To manually export a function or dataset or to load a package, pass a list to \code{export_also} where the list element is named
 "functions", "data" and/or "packages". For example: \code{export_also=list("functions"=c("function_name_1", "function_name_2"), 
 "packages"="package_name")}.
 }

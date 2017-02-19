@@ -2,14 +2,14 @@
 % Please edit documentation in R/MergeResults.R
 \name{MergeResults}
 \alias{MergeResults}
-\title{Merge lists returned from separate simulations with MonteCarlo().}
+\title{Merge Lists Returned From Separate Simulations With MonteCarlo().}
 \usage{
 MergeResults(identifier, path)
 }
 \arguments{
-\item{identifier}{string that is common to the names of the files that are supposed to be merged.}
+\item{identifier}{String that is common to the names of the files that are supposed to be merged.}
 
-\item{path}{string specifying the path to directory that contains the files.}
+\item{path}{String specifying the path to directory that contains the files.}
 }
 \description{
 \code{MergeResults} is a utility function that allows to merge the output from separate simulations

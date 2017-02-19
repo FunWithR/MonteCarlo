@@ -1,12 +1,12 @@
 
-#' @title Merge lists returned from separate simulations with MonteCarlo().
+#' @title Merge Lists Returned From Separate Simulations With MonteCarlo().
 #' @description \code{MergeResults} is a utility function that allows to merge the output from separate simulations
 #' using the same function and parameter grid.
 #' @details To merge two or more files with simulation results they have to be saved using \code{save}.
 #' The identifier string has to be part of the name of all targeted files, but not part of the names of any 
 #' other files in the directory.
-#' @param identifier string that is common to the names of the files that are supposed to be merged.
-#' @param path string specifying the path to directory that contains the files.
+#' @param identifier String that is common to the names of the files that are supposed to be merged.
+#' @param path String specifying the path to directory that contains the files.
 #' @import abind
 #' @examples 
 #' \donttest{out<-MergeResults(identifier="MonteCarloResults", path="C:/Users/")

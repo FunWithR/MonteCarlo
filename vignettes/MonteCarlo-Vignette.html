@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Christian Leschinski" />
+
+<meta name="date" content="2016-09-02" />
+
+<title>Vignette: The MonteCarlo Package</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+</style>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Vignette: The MonteCarlo Package</h1>
+<h4 class="author"><em>Christian Leschinski</em></h4>
+<h4 class="date"><em>2016-09-02</em></h4>
+
+
+
+<p>Monte Carlo studies are a common tool in statistics and related fields. They are used for everything from the evaluation of the finite sample properties of new statistical methods to the generation of probability distributions for risk management.</p>
+<p>The MonteCarlo package for the R language provides tools to create simulation studies quickly and easily and it also allows to summarize the results in LaTeX tables. This vignette gives details on the implementation of the MonteCarlo package and presents examples for its application.</p>
+<p>There are only two main functions in the package:</p>
+<ol style="list-style-type: decimal">
+<li><p><em>MonteCarlo()</em> runs a simulation study for a user defined parameter grid. It handles the generation of loops over these parameter grid and parallelizes the computation on a user specified number of CPUs.</p></li>
+<li><p><em>MakeTable()</em> creates LaTeX tables from the output of <em>MonteCarlo()</em>. It stacks high dimensional output arrays into tables with a user specified ordering of rows and columns.</p></li>
+</ol>
+<p>To run a simulation study, the user has to nest both - the generation of a sample and the calculation of the desired statistics from this sample - in a single function. This function is passed to <em>MonteCarlo()</em>. No additional programming is required.</p>
+<p>The idea behind this approach is to allow the user full control and flexibility with regard to the design of the Monte Carlo experiment. It also makes <em>MonteCarlo()</em> very versatile. Finally, it is very intuitive. The user formulates his experiment as if he/she was only interested in a single draw.</p>
+<div id="a-first-example" class="section level2">
+<h2>A First Example</h2>
+<p>The best way to get working with the MonteCarlo package is to look at an example. Here we evaluate the performance of a standard t-test of the hypothesis <span class="math inline">\(H_0: \mu=0\)</span> vs <span class="math inline">\(H_1: \mu\neq0\)</span>. We are interested to see how the size and power of the test change with the sample size (<em>n</em>), the distance from the null hypothesis (<em>loc</em> - for location) and the standard deviation of the distribution (<em>scale</em>).</p>
+<p>The test statistic is given by</p>
+<p><span class="math inline">\(t=\frac{\bar x}{\hat \sigma}\)</span>,</p>
+<p>where <span class="math inline">\(\bar x\)</span> and <span class="math inline">\(\hat \sigma\)</span> are the arithmetic mean and the estimated standard deviation. The sample is generated from a normal distribution.</p>
+<p>To conduct this analysis, we proceed as follows. First, we load the MonteCarlo package.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(MonteCarlo)</code></pre></div>
+<p>Then we define the following function.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">#########################################
+##      Example: t-test
+
+<span class="co"># Define function that generates data and applies the method of interest</span>
+
+ttest&lt;-function(n,loc,scale){
+  
+  <span class="co"># generate sample:</span>
+    sample&lt;-<span class="kw">rnorm</span>(n, loc, scale)
+  
+  <span class="co"># calculate test statistic:</span>
+    stat&lt;-<span class="kw">sqrt</span>(n)*<span class="kw">mean</span>(sample)/<span class="kw">sd</span>(sample)
+  
+  <span class="co"># get test decision:</span>
+    decision&lt;-<span class="kw">abs</span>(stat)&gt;<span class="fl">1.96</span>
+  
+  <span class="co"># return result:</span>
+    <span class="kw">return</span>(<span class="kw">list</span>(<span class="st">&quot;decision&quot;</span>=decision))
+}</code></pre></div>
+<p>As discussed above, <em>ttest()</em> is formulated in a way as if we only want to generate a single test decision. The arguments of the function are the parameters we are interested in.</p>
+<p>Our <em>ttest()</em> function carries out 4 steps:</p>
+<ol style="list-style-type: decimal">
+<li>Draw a sample of <em>n</em> observations from a normal distribution with mean <span class="math inline">\(\mu=loc\)</span> and standard deviation <span class="math inline">\(\sigma=scale\)</span>.</li>
+<li>Calculate the t-statistic.</li>
+<li>Determine the test decision.</li>
+<li>Return the desired result in form of a list.</li>
+</ol>
+<p>We then define the combinations of parameters that we are interested in and collect them in a list. The elements of this list must have the same names as the parameters for which we want to supply grids.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># define parameter grid:</span>
+
+  n_grid&lt;-<span class="kw">c</span>(<span class="dv">50</span>,<span class="dv">100</span>,<span class="dv">250</span>,<span class="dv">500</span>)
+  loc_grid&lt;-<span class="kw">seq</span>(<span class="dv">0</span>,<span class="dv">1</span>,<span class="fl">0.2</span>)
+  scale_grid&lt;-<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">2</span>)
+
+<span class="co"># collect parameter grids in list:</span>
+  param_list=<span class="kw">list</span>(<span class="st">&quot;n&quot;</span>=n_grid, <span class="st">&quot;loc&quot;</span>=loc_grid, <span class="st">&quot;scale&quot;</span>=scale_grid)</code></pre></div>
+<p>To run the simulation, the function <em>ttest()</em> and the parameter grid (<em>param_list</em>) are passed to <em>MonteCarlo()</em>, together with the desired number of Monte Carlo repetitions (here <em>nrep=1000</em>).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># run simulation:</span>
+
+  MC_result&lt;-<span class="kw">MonteCarlo</span>(<span class="dt">func=</span>ttest, <span class="dt">nrep=</span><span class="dv">1000</span>, <span class="dt">param_list=</span>param_list)</code></pre></div>
+<p>There is no further coding required. All the mechanics of the Monte Carlo experiment are handled by the <em>MonteCarlo()</em> function.</p>
+<p>Calling summary produces a short information on the simulation.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  <span class="kw">summary</span>(MC_result)</code></pre></div>
+<pre><code>## Simulation of function: 
+## 
+## function(n,loc,scale){
+##   
+##   # generate sample:
+##     sample&lt;-rnorm(n, loc, scale)
+##   
+##   # calculate test statistic:
+##     stat&lt;-sqrt(n)*mean(sample)/sd(sample)
+##   
+##   # get test decision:
+##     decision&lt;-abs(stat)&gt;1.96
+##   
+##   # return result:
+##     return(list(&quot;decision&quot;=decision))
+## }
+## 
+## Required time: 13.58 secs for nrep = 1000  repetitions on 1 CPUs 
+## 
+## Parameter grid: 
+## 
+##      n : 50 100 250 500 
+##    loc : 0 0.2 0.4 0.6 0.8 1 
+##  scale : 1 2 
+## 
+##  
+## 1 output arrays of dimensions: 4 6 2 1000</code></pre>
+<p>As one can see from the summary, the simulation results are stored in an array of dimension <code>c(4,6,2,1000)</code>. The Monte Carlo repetitions are collected in the last dimension of the array.</p>
+<p>To summarize the results in a reasonable way and to include them as a table in a paper or report, we have to represent them in a matrix. This is handled by the <em>MakeTable()</em> function, that stacks the submatrices collected in the array in the rows and columns of a new and larger matrix and prints the result in the form of LaTeX code to generate the desired table.</p>
+<p>To determine in which order the results are stacked in rows and columns, we supply the function arguments <em>rows</em> and <em>cols</em> that are vectors of the names of the parameters in the order in which we want them to appear in the table, sorted from the inside to the outside.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># generate table:</span>
+
+  <span class="kw">MakeTable</span>(<span class="dt">output=</span>MC_result, <span class="dt">rows=</span><span class="st">&quot;n&quot;</span>, <span class="dt">cols=</span><span class="kw">c</span>(<span class="st">&quot;loc&quot;</span>,<span class="st">&quot;scale&quot;</span>), <span class="dt">digits=</span><span class="dv">2</span>, <span class="dt">include_meta=</span><span class="ot">FALSE</span>)</code></pre></div>
+<pre><code>## \begin{table}[h]
+## \centering
+## \resizebox{ 1 \textwidth}{!}{%
+## \begin{tabular}{ rrrrrrrrrrrrrrr }
+## \hline\hline\\\\
+##  scale &amp;&amp; \multicolumn{ 6 }{c}{ 1 } &amp;  &amp; \multicolumn{ 6 }{c}{ 2 } &amp;  &amp;  \\ 
+## n/loc &amp;  &amp; 0 &amp; 0.2 &amp; 0.4 &amp; 0.6 &amp; 0.8 &amp; 1 &amp;  &amp; 0 &amp; 0.2 &amp; 0.4 &amp; 0.6 &amp; 0.8 &amp; 1 \\ 
+##  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  \\ 
+## 50 &amp;  &amp; 0.06 &amp; 0.30 &amp; 0.83 &amp; 0.98 &amp; 1.00 &amp; 1.00 &amp;  &amp; 0.05 &amp; 0.11 &amp; 0.28 &amp; 0.55 &amp; 0.79 &amp; 0.95 \\ 
+## 100 &amp;  &amp; 0.05 &amp; 0.51 &amp; 0.98 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp;  &amp; 0.05 &amp; 0.16 &amp; 0.54 &amp; 0.84 &amp; 0.97 &amp; 1.00 \\ 
+## 250 &amp;  &amp; 0.06 &amp; 0.89 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp;  &amp; 0.04 &amp; 0.34 &amp; 0.91 &amp; 1.00 &amp; 1.00 &amp; 1.00 \\ 
+## 500 &amp;  &amp; 0.06 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp;  &amp; 0.04 &amp; 0.58 &amp; 0.99 &amp; 1.00 &amp; 1.00 &amp; 1.00 \\ 
+## \\
+## \\
+## \hline\hline
+## \end{tabular}%
+## }
+## \caption{ decision  }
+## \end{table}</code></pre>
+<p>To change the ordering, just change the vectors <em>rows</em> and <em>cols</em>. As can be seen below, the results change accordingly.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># generate table:</span>
+
+  <span class="kw">MakeTable</span>(<span class="dt">output=</span>MC_result, <span class="dt">rows=</span><span class="kw">c</span>(<span class="st">&quot;n&quot;</span>,<span class="st">&quot;scale&quot;</span>), <span class="dt">cols=</span><span class="st">&quot;loc&quot;</span>, <span class="dt">digits=</span><span class="dv">2</span>, <span class="dt">include_meta=</span><span class="ot">FALSE</span>)</code></pre></div>
+<pre><code>## \begin{table}[h]
+## \centering
+## \resizebox{ 1 \textwidth}{!}{%
+## \begin{tabular}{ rrrrrrrrr }
+## \hline\hline\\\\
+## scale &amp; n/loc &amp;  &amp; 0 &amp; 0.2 &amp; 0.4 &amp; 0.6 &amp; 0.8 &amp; 1 \\ 
+##  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  \\ 
+## \multirow{ 4 }{*}{ 1 } &amp; 50 &amp;  &amp; 0.06 &amp; 0.30 &amp; 0.83 &amp; 0.98 &amp; 1.00 &amp; 1.00 \\ 
+##  &amp; 100 &amp;  &amp; 0.05 &amp; 0.51 &amp; 0.98 &amp; 1.00 &amp; 1.00 &amp; 1.00 \\ 
+##  &amp; 250 &amp;  &amp; 0.06 &amp; 0.89 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 \\ 
+##  &amp; 500 &amp;  &amp; 0.06 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 &amp; 1.00 \\ 
+##  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  \\ 
+## \multirow{ 4 }{*}{ 2 } &amp; 50 &amp;  &amp; 0.05 &amp; 0.11 &amp; 0.28 &amp; 0.55 &amp; 0.79 &amp; 0.95 \\ 
+##  &amp; 100 &amp;  &amp; 0.05 &amp; 0.16 &amp; 0.54 &amp; 0.84 &amp; 0.97 &amp; 1.00 \\ 
+##  &amp; 250 &amp;  &amp; 0.04 &amp; 0.34 &amp; 0.91 &amp; 1.00 &amp; 1.00 &amp; 1.00 \\ 
+##  &amp; 500 &amp;  &amp; 0.04 &amp; 0.58 &amp; 0.99 &amp; 1.00 &amp; 1.00 &amp; 1.00 \\ 
+## \\
+## \\
+## \hline\hline
+## \end{tabular}%
+## }
+## \caption{ decision  }
+## \end{table}</code></pre>
+<p>Now we can simply copy the LaTeX code and add it to our paper, report or presentation. That is all. The user can focus on the design of the experiment that he is interested in and on the interpretation of the results.</p>
+<p>We will now discuss the details of <em>MonteCarlo()</em> and <em>MakeTable()</em> and then give further examples.</p>
+</div>
+<div id="the-montecarlo-function" class="section level2">
+<h2>The MonteCarlo() Function</h2>
+<div id="arguments-of-montecarlo" class="section level3">
+<h3>Arguments of MonteCarlo()</h3>
+<p>The most important argument of <em>MonteCarlo()</em> is <em>func</em>. It is a user defined function that handles the generation of data, the application of the method of interest and the evaluation of the result for a single repetition and parameter combination.</p>
+<p><em>MonteCarlo()</em> handles the generation of loops over the desired parameter grids, the repetition of the Monte Carlo experiment for each of the parameter constellations and (if desired) the parallelization of this process.</p>
+<p>There are two important formal requirements that func has to fulfill.</p>
+<ol style="list-style-type: decimal">
+<li>The arguments of func have to be scalar.</li>
+<li>The value returned by func has to be a list of (unnamed) scalars. (The list elements can be named).</li>
+</ol>
+<p>In addition to that, <em>func</em> has to work in the current workspace. That means that the required packages, data, other function, etc., have to be loaded.</p>
+<p>The second most important argument of <em>MonteCarlo()</em> is <em>param_list</em>, that also has to fulfill some conventions:</p>
+<ol style="list-style-type: decimal">
+<li>It is a list.</li>
+<li>The list elements are named after the arguments of <em>func</em>.</li>
+<li>Each element of the list is a vector or scalar.</li>
+<li>The list contains as many elements as there are required arguments for <em>func</em>.</li>
+</ol>
+<p>The only other required argument of <em>MonteCarlo()</em> is <em>nrep</em> that determines the desired number of repetitions. Apart from that, there is a number of optional arguments that are listed in the table below.</p>
+<table>
+<colgroup>
+<col width="15%"></col>
+<col width="84%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">Argument</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><em>func</em></td>
+<td align="left">The function to be evaluated.</td>
+</tr>
+<tr class="even">
+<td align="center"><em>nrep</em></td>
+<td align="left">An integer that specifies the desired number of Monte Carlo repetitions.</td>
+</tr>
+<tr class="odd">
+<td align="center"><em>param_list</em></td>
+<td align="left">A list whose components are named after the parameters of <em>func</em> and each component is a vector containing the desired grid values for that parameter.</td>
+</tr>
+<tr class="even">
+<td align="center"><em>ncpus</em></td>
+<td align="left">An integer specifying the number of CPUs to be used. Default is <em>ncpus=1</em>. For <em>ncpus&gt;1</em> the simulation is parallized automatically using <em>ncpus</em> CPU units.</td>
+</tr>
+<tr class="odd">
+<td align="center"><em>max_grid</em></td>
+<td align="left">Integer that specifies for which grid size to throw an error, if grid becomes to large. Default is <em>max_grid=1000</em>.</td>
+</tr>
+<tr class="even">
+<td align="center"><em>time_n_test</em></td>
+<td align="left">Boolean that specifies whether the required simulation time should be estimated (useful for large simulations or slow functions). See details. Default is <em>time_n_test=FALSE</em>.</td>
+</tr>
+<tr class="odd">
+<td align="center"><em>save_res</em></td>
+<td align="left">Boolean that specifies whether the results of <em>time_n_test</em> should be saved to the current directory. Default is <em>time_n_test=FALSE</em>.</td>
+</tr>
+<tr class="even">
+<td align="center"><em>debug</em></td>
+<td align="left">Boolean that activates/deactivates the debug mode. If <em>debug=TRUE</em>, all relevant variables are assigned to the global environment and the core loop is printed. This allows to run it manually and to see how MonteCarlo works internally. Default is <em>debug=FALSE</em>.</td>
+</tr>
+<tr class="odd">
+<td align="center"><em>raw</em></td>
+<td align="left">Boolean that specifies whether the output should be averaged over the <em>nrep</em> repetitions. Default is <em>raw=TRUE</em>.</td>
+</tr>
+<tr class="even">
+<td align="center"><em>export_also</em></td>
+<td align="left">A list specifying additional objects that are supposed to be exported to the cluster. This allows to export data or to bypass the automatic export of functions. Default is <em>export_also=NULL</em>.</td>
+</tr>
+</tbody>
+</table>
+<div id="ncpus---automatized-parallelization" class="section level4">
+<h4>ncpus - Automatized Parallelization</h4>
+<p>If <em>ncpus</em> is set to an integer value larger than one, the simulation is conducted parallized on a <em>snow</em> cluster with the respective number of slaves. Make sure that the machine you are using has the respective number of CPU units available. The parallelization builds on the snowfall package. The setup of the cluster including the export of the necessary functions and packages to the workers are handled automatically. <em>MonteCarlo()</em> autmatically analyzes <em>func</em> to determine the required functions and packages. It can even deal with nested dependencies, where <em>func</em> relies on functions that make use of other functions, and so on. The only precondition is that these functions are available in the workspace - as they have to be if one would just want to run <em>func</em> on its own.</p>
+</div>
+<div id="max_grid---warning-for-excessively-large-parameter-grids" class="section level4">
+<h4>max_grid - Warning for Excessively Large Parameter Grids</h4>
+<p>Large parameter grids quickly lead to exessive time requirements for the simulation study. To prevent this from happening unintentionally (for example by thoughtless definition of <em>param_list</em>) an error is thrown, if there are more than 1000 parameter constellations. If it is desired to run the simulation nonetheless, <em>max_grid</em> has to be modified accordingly.</p>
+</div>
+<div id="time_n_test---estimate-of-the-time-required-for-the-simulation" class="section level4">
+<h4>time_n_test - Estimate of the Time Required for the Simulation</h4>
+<p>For the estimation of the required simulation time, a separate simulation is run on a reduced grid that only contains the extreme points for each parameter, e.g. the smallest and the largest sample size. This test simulation is carried out with nrep/10 repetitions and the required simulation time is estimated by a linear interpolation. Since the computational complexity is usually a convex function of the sample size and the dimension of the process, this approach tends to overestimate the time required. Nevertheless, it provides a reasonable estimate of the order of magnitude of the time required (minutes, hours or days?).</p>
+</div>
+<div id="save_res---save-the-results-of-the-test-run" class="section level4">
+<h4>save_res - Save the Results of the Test Run</h4>
+<p>If <em>time_n_test</em> is set to <em>TRUE</em>, <em>save_res</em> determines whether the results of the smaller test simulation should be saved in the current working directory. This can be useful for larger simulations, where the simulation takes a lot of time and it can be useful to have a look at the preliminary results to stop the main simulation if something is not right.</p>
+</div>
+<div id="debug---run-simulation-in-global-environment-to-find-bugs" class="section level4">
+<h4>debug - Run Simulation in Global Environment to Find Bugs</h4>
+<p>Even though <em>func</em> might be programmed and tested carefully, there can be bugs that only become visible if the simulation is run in parallel. To find those, <em>MonteCarlo()</em> assigns all relevant variables to the global environment and prints out the core loop that it generated, so that the simulation can be run “by hand” in the global environment. This also allows the user to see how <em>MonteCarlo()</em> is working internally. We use this below.</p>
+</div>
+<div id="raw---summarize-the-output-by-averaging-over-the-nrep-repetitions" class="section level4">
+<h4>raw - Summarize the Output by Averaging Over the nrep Repetitions</h4>
+<p>Sometimes it is not intended to run a large simulation study and to document the results in a LaTeX document. Instead one might want to conduct a little experiment and immediately see the result. If this is desired, one can set <em>raw=FALSE</em> and the output array will be aggregated by taking averages of the results for all <em>nrep</em> repetitions. For small parameter grids these can be viewed and interpreted directly.</p>
+</div>
+<div id="export_also---data-export-to-the-cluster-and-troubleshooting" class="section level4">
+<h4>export_also - Data Export to the Cluster and Troubleshooting</h4>
+<p>Different from functions and packages, <em>MonteCarlo()</em> currently does not support the automatic export of datasets used in <em>func</em> to the cluster. If this is desired, the respective dataset has to be supplied as <em>export_also$data</em>. In addition to that, <em>export_also</em> opens a backdoor in case of bugs that might hamper the automatic function and package export. To manually export a function or dataset or to load a package, pass a list to <em>export_also</em> where the list element is named “functions”, “data” and/or “packages”. For example: <code>export_also=list(&quot;data&quot;=rnorm(100), &quot;functions&quot;=c(&quot;function_name_1&quot;, &quot;function_name_2&quot;), &quot;packages&quot;=&quot;package_name&quot;)</code>.</p>
+</div>
+</div>
+<div id="the-recipe-behind-montecarlo" class="section level3">
+<h3>The Recipe Behind MonteCarlo()</h3>
+<p>To see how <em>MonteCarlo()</em> works internally, we return to the example and turn on the debug mode.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  MC_result&lt;-<span class="kw">MonteCarlo</span>(<span class="dt">func=</span>ttest, <span class="dt">nrep=</span><span class="dv">1000</span>, <span class="dt">param_list=</span>param_list, <span class="dt">debug=</span><span class="ot">TRUE</span>)</code></pre></div>
+<pre><code>## Grid of  48  parameter constellations to be evaluated. 
+##  
+## Progress: 
+##  
+## 
+  |                                                                       
+  |                                                                 |   0%
+##  
+## for(i1 in 1:4) {
+##  for(i2 in 1:6) {
+##  for(i3 in 1:2) {
+##  rep&lt;-rep+1 
+##  setTxtProgressBar(pb, rep) 
+##  n=n_grid[i1] 
+##  loc=loc_grid[i2] 
+##  scale=scale_grid[i3] 
+##  suppressMessages(sfInit(parallel=if(ncpus&gt;1) {
+##  TRUE 
+## } else {
+##  FALSE 
+## } , cpus = ncpus, type= 'SOCK')) 
+##  if(ncpus&gt;1) {
+##  sfExport('func2','func','libloc_strings','n','loc','scale') 
+## }  
+##  sfClusterEval(.libPaths(libloc_strings)) 
+##  capture.output(suppressMessages(sfLibrary(stats))) 
+##  erg&lt;-sfApply(as.matrix(1:nrep,nrep,1),margin=1,fun=func2,n=n,loc=loc,scale=scale) 
+##  suppressMessages(sfStop()) 
+##  results$decision[i1,i2,i3,]&lt;- as.numeric(unlist(erg)[which(gsub(' ', '_',names(unlist(erg)))=='decision')]) 
+## }  
+## }  
+## }</code></pre>
+<p>As one can see from this example, <em>MonteCarlo()</em> creates a loop for every parameter in <em>func</em>. For each iteration of the loops, the arguments of func are set to a different value in the parameter grid. The <em>nrep</em> repetitions for the respective parameter constellation is then computed in parallel for <em>ncpus&gt;1</em> and the results are saved in the <em>results$decision</em> array.</p>
+<p>This recipe is applied for all simulations conducted with <em>MonteCarlo()</em>. The function creates as many nested loops as there are elements in <em>param_list</em>. A cluster is initiated and the required functions and parameters are exported to the cluster. In addition to that, the required packages are loaded on the slaves. If the list returned by <em>func</em> had more than one element, there would be more than one array in the list of results.</p>
+</div>
+</div>
+<div id="the-maketable-function" class="section level2">
+<h2>The MakeTable() Function</h2>
+<div id="arguments-of-maketable" class="section level3">
+<h3>Arguments of MakeTable()</h3>
+<p>As discussed above, the <em>MakeTable()</em> function handles the generation of LaTeX tables from the output of <em>MonteCarlo()</em>. Like the latter, it only has three required arguments. The first one - <em>output</em> - is a <em>MonteCarlo</em> object returned by the equally named function. The second and third are <em>rows</em> and <em>cols</em> that determine the ordering of the resulting table (from the inside to the outside).</p>
+<p>If <em>func</em> returns a list with more than one element, each list element is shown in a separate table by default. This behavior can be modified by including the string <em>“list”</em> at the desired position in either <em>rows</em> or <em>cols</em>.</p>
+<p>Similar to <em>MonteCarlo()</em>, <em>MakeTable()</em> has a number of optional arguments that allow to modify the appearance of the generated table and the way the simulation results are summarized. An overview of the function arguments is given in the table below. Details will be discussed thereafter.</p>
+<table style="width:96%;">
+<colgroup>
+<col width="19%"></col>
+<col width="76%"></col>
+</colgroup>
+<thead>
+<tr class="header">
+<th align="center">Argument</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="center"><em>output</em></td>
+<td align="left">A list of class <em>MonteCarlo</em> generated by <em>MonteCarlo()</em>.</td>
+</tr>
+<tr class="even">
+<td align="center"><em>rows</em></td>
+<td align="left">A vector of parameter names to be stacked in the rows of the table. Ordered from the inside to the outside.</td>
+</tr>
+<tr class="odd">
+<td align="center"><em>cols</em></td>
+<td align="left">Vector of parameter names to be stacked in the cols of the table. Ordered from the inside to the outside.</td>
+</tr>
+<tr class="even">
+<td align="center"><em>digits</em></td>
+<td align="left">Number of digits displayed in table. Default is digits=4.</td>
+</tr>
+<tr class="odd">
+<td align="center"><em>collapse</em></td>
+<td align="left">Optional list of the same length as <em>output</em> giving the names of functions to be applied to the repective components of <em>output</em> when collapsing the results to a table. By default <em>mean()</em> is used. Another example could be <em>sd()</em>.</td>
+</tr>
+<tr class="even">
+<td align="center"><em>transform</em></td>
+<td align="left">Optional argument to transform the output table (for example from MSE to RMSE). If a function is supplied, it is applied to all tables. Alternatively, a list of functions can be supplied that has the same length as output. For tables that are supposed to stay unchanged set the respective list elements to <em>NULL</em>.</td>
+</tr>
+<tr class="odd">
+<td align="center"><em>include_meta</em></td>
+<td align="left">Boolean that determines whether the meta data provided by <em>summary()</em> is included in comments below the table. Default is <em>include_meta=TRUE</em>.</td>
+</tr>
+<tr class="even">
+<td align="center"><em>width_mult</em></td>
+<td align="left">Scaling factor for width of the output table. Default is <em>width_mult=1</em>.</td>
+</tr>
+<tr class="odd">
+<td align="center"><em>partial_grid</em></td>
+<td align="left">An optional list with the elements named after the parameters for which only a part of the grid values is supposed to be included in the table. Each component of the list is a vector that specifies the grid values of interest.</td>
+</tr>
+</tbody>
+</table>
+<div id="digits---determine-the-number-of-digits-printed" class="section level4">
+<h4>digits - Determine the Number of Digits Printed</h4>
+<p><em>digits</em> simply specifies the number of digits to which results are rounded in the table. In contrast to the standard behavior in R, the results will be printed with exactly this number of digits. Trailing zeros will not be dropped. For example, if <em>digits=2</em>, 1 will be displayed as 1.00. This makes for nicer formatting of the resulting tables.</p>
+</div>
+<div id="collapse---modify-the-way-the-simulation-results-are-aggregated" class="section level4">
+<h4>collapse - Modify the Way the Simulation Results are Aggregated</h4>
+<p>For a given parameter constellation, there will be <em>nrep</em> simulation results in <em>output</em>. By default these are aggregated using <em>mean()</em>. Therefore, if <em>func</em> returns a test decision with the result either specified as 0 (for non-rejection) or 1 (for rejection), as it was the case in the <em>ttest()</em>-example, the results will be aggregated to represent the rejection frequency (size or power - depending on the DGP and the parameter constellation). Similarly, if <em>func</em> returns a point estimate, the mean of the estimated parameter is given in the table. By returning the deviation of the estimated parameter from its true value in <em>func</em> the table will represent the bias. By the same principle, MSEs can be calculated if <em>func</em> returns squares of these values.</p>
+<p>Even though the standard behavior is very versatile, one might be interested in a different aspect of the simulated distribution - for example a quantile such as the median. Therefore the <em>collapse</em> argument allows to supply other functions that can be used to aggregate the output. An example could be median() or sd(). These functions are supplied to <em>collapse</em> in form of a list of the same length as the output of <em>func</em>. Note also that the functions that are specified have to return scalars.</p>
+<p>An example for the use of <em>collapse</em> is given below in the section “Further Examples”.</p>
+</div>
+<div id="transform---apply-transformations-to-the-generated-tables" class="section level4">
+<h4>transform - Apply Transformations to the Generated Tables</h4>
+<p>Another option is to apply a transformation directly to the table. This can be useful in situations where the resulting numbers are very small or very large so that one wants to scale them by a power of 10 or 1/10. Another example would be if one wants to show root mean squared errors instead of MSEs.</p>
+<p>As for <em>collapse</em>, an example for the use of <em>transform</em> is given in the section “Further Examples”.</p>
+</div>
+<div id="include_meta---include-information-from-summary-in-comments-under-the-table" class="section level4">
+<h4>include_meta - Include Information from summary() in Comments Under the Table</h4>
+<p>By default the information returned by <em>summary()</em> - such as the specification of <em>func</em>, the parameter grids used in the simulation, the number of repetitions <em>nrep</em> and the required simulation time - are included in comments below the table. This is meant as a form of automatic documentation that allows for the replication of results in reports, papers or presentations, even if they were generated some time ago.</p>
+<p>If this is not in the interest of the user - or the comments are just perceived as lengthy, this feature can be switched off by setting <em>include_meta=FALSE</em>.</p>
+</div>
+<div id="width_mult---modify-width-of-the-table-relative-to-text" class="section level4">
+<h4>width_mult - Modify Width of the Table Relative to Text</h4>
+<p>Without further modifications the LaTeX tables returned by <em>MakeTable()</em> are scaled to have the same width as the text in the document. This can be modified directly in the LaTeX code that is returned, but if the user already knows in advance that the table should be smaller, this can already specified by setting <em>width_mult</em> to the desired fraction of the text width.</p>
+</div>
+<div id="partial_grid---print-table-only-for-subsets-of-the-original-parameter-grid" class="section level4">
+<h4>partial_grid - Print Table Only for Subsets of the Original Parameter Grid</h4>
+<p>Sometimes situations will occur in which one is only interested in a subset of the parameter grid originally considered and passed to <em>MonteCarlo()</em>. For example because it turns out that the resulting table is very large, or because the results are not very informative for some values of the grid (e.g. the power of a test remains at 1 if the sample size is increased further).</p>
+<p>To drop unwanted parts of the table, a list can be supplied to <em>partial_grid</em>, that specifies which elements of which parameter vector should remain part of the table. The list has to have as many elements as there are parameters in <em>param_list</em> and each element has to be named after the respective parameter. Each list element has to be a vector of natural numbers specifying the positions of desired values in the respective parameter vector. Again, an example is given below in the section “Further Examples”.</p>
+</div>
+</div>
+</div>
+<div id="mergeresults" class="section level2">
+<h2>MergeResults()</h2>
+<p><em>MergeResults()</em> is a utility function that allows to merge the <em>MonteCarlo</em> objects generated from multiple simulations using the same <em>func</em> and <em>param_list</em>. This can be useful, if a first test simulation is run with a small <em>nrep</em> and more reliable results are produced later with a larger <em>nrep</em>, or if multiple machines are used.</p>
+<p>There are only two required arguments. The first one, <em>path</em> specifies the path of the directory that contains the files that are supposed to be merged. The second one, <em>identifier</em> is a string that identifies which files should be merged. The string has to be a substring of the variable names of all files that are supposed to be merged, but it cannot be contained in the filenames of other files in the specified directory.</p>
+</div>
+<div id="further-examples-comparison-of-two-estimators" class="section level2">
+<h2>Further Examples: Comparison of Two Estimators</h2>
+<p>In the previous sections we focused on the t-test as an example for the use of <em>MonteCarlo()</em> and <em>MakeTable()</em>. Here, we consider a second example: the evaluation of estimators. In particular, we compare the <em>mean()</em> and the <em>median()</em> as estimators for the expected value of a Gaussian random variable. This example serves to illustrate the use of the optinal arguments of the <em>MakeTable()</em> function.</p>
+<div id="multiple-outputs" class="section level3">
+<h3>Multiple Outputs</h3>
+<p>First, we specify the function of interest: <em>mean_vs_median()</em> (defined below) generates a sample of <em>n</em> normal distributed random variables with standard deviation <em>scale</em>. It then calulates the <em>mean()</em> and the <em>median()</em> and returns both in a list. Therefore, in contrast to the t-test example used above, this function returns a list with two elements.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mean_vs_median&lt;-function(n,scale){
+
+<span class="co"># generate sample</span>
+sample&lt;-<span class="kw">rnorm</span>(n, <span class="dv">0</span>, scale)
+
+<span class="co"># calculate estimators</span>
+mean_sample&lt;-<span class="kw">mean</span>(sample)
+median_sample&lt;-<span class="kw">median</span>(sample)
+
+<span class="co"># return results</span>
+<span class="kw">return</span>(<span class="kw">list</span>(<span class="st">&quot;mean&quot;</span>=mean_sample, <span class="st">&quot;median&quot;</span>=median_sample))
+}
+
+n_grid&lt;-<span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">250</span>, <span class="dv">500</span>)
+scale_grid&lt;-<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>)
+
+param_list=<span class="kw">list</span>(<span class="st">&quot;n&quot;</span>=n_grid, <span class="st">&quot;scale&quot;</span>=scale_grid)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># run simulation:</span>
+
+erg_mean_median&lt;-<span class="kw">MonteCarlo</span>(<span class="dt">func=</span>mean_vs_median, <span class="dt">nrep=</span><span class="dv">1000</span>, <span class="dt">param_list=</span>param_list)</code></pre></div>
+<p>Like before, we pass the function and the parameter grid to <em>MonteCarlo()</em> and then feed the results to <em>MakeTable()</em>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">MakeTable</span>(<span class="dt">output=</span>erg_mean_median, <span class="dt">rows=</span><span class="st">&quot;n&quot;</span>, <span class="dt">cols=</span><span class="st">&quot;scale&quot;</span>, <span class="dt">digits=</span><span class="dv">2</span>, <span class="dt">include_meta=</span><span class="ot">FALSE</span>)</code></pre></div>
+<pre><code>## \begin{table}[h]
+## \centering
+## \resizebox{ 1 \textwidth}{!}{%
+## \begin{tabular}{ rrrrr }
+## \hline\hline\\\\
+## n/scale &amp;  &amp; 1 &amp; 2 &amp; 4 \\ 
+##  &amp;  &amp;  &amp;  &amp;  \\ 
+## 50 &amp;  &amp; -0.01 &amp;  0.02 &amp;  0.01 \\ 
+## 250 &amp;  &amp;  0.00 &amp;  0.00 &amp;  0.01 \\ 
+## 500 &amp;  &amp;  0.00 &amp;  0.00 &amp; -0.01 \\ 
+## \\
+## \\
+## \hline\hline
+## \end{tabular}%
+## }
+## \caption{ mean  }
+## \end{table}
+## 
+##  
+##  
+## \begin{table}[h]
+## \centering
+## \resizebox{ 1 \textwidth}{!}{%
+## \begin{tabular}{ rrrrr }
+## \hline\hline\\\\
+## n/scale &amp;  &amp; 1 &amp; 2 &amp; 4 \\ 
+##  &amp;  &amp;  &amp;  &amp;  \\ 
+## 50 &amp;  &amp;  0.00 &amp;  0.02 &amp;  0.03 \\ 
+## 250 &amp;  &amp;  0.00 &amp;  0.00 &amp;  0.02 \\ 
+## 500 &amp;  &amp;  0.00 &amp;  0.00 &amp; -0.01 \\ 
+## \\
+## \\
+## \hline\hline
+## \end{tabular}%
+## }
+## \caption{ median  }
+## \end{table}</code></pre>
+<p>As one can see, the default behavior of <em>MakeTable()</em> is to print separate tables for each value in the list returned by <em>func</em>.</p>
+</div>
+<div id="merge-several-outputs-into-one-table" class="section level3">
+<h3>Merge Several Outputs Into One Table</h3>
+<p>To include both, the estimates for the mean and median in the same table, we simply include the string “list” in either <em>rows</em> or <em>cols</em>. Here, we choose to include it as the last element of <em>cols</em>, to have the results for <em>mean()</em> and <em>median()</em> next to each other.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">MakeTable</span>(<span class="dt">output=</span>erg_mean_median, <span class="dt">rows=</span><span class="kw">c</span>(<span class="st">&quot;n&quot;</span>), <span class="dt">cols=</span><span class="kw">c</span>(<span class="st">&quot;scale&quot;</span>,<span class="st">&quot;list&quot;</span>), <span class="dt">digits=</span><span class="dv">2</span>, <span class="dt">include_meta=</span><span class="ot">FALSE</span>)</code></pre></div>
+<pre><code>## \begin{table}[h]
+## \centering
+## \resizebox{ 1 \textwidth}{!}{%
+## \begin{tabular}{ rrrrrrrrr }
+## \hline\hline\\\\
+##  list &amp;&amp; \multicolumn{ 3 }{c}{ mean } &amp;  &amp; \multicolumn{ 3 }{c}{ median } &amp;  &amp;  \\ 
+## n/scale &amp;  &amp; 1 &amp; 2 &amp; 4 &amp;  &amp; 1 &amp; 2 &amp; 4 \\ 
+##  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  \\ 
+## 50 &amp;  &amp; -0.01 &amp;  0.02 &amp;  0.01 &amp;  &amp;  0.00 &amp;  0.02 &amp;  0.03 \\ 
+## 250 &amp;  &amp;  0.00 &amp;  0.00 &amp;  0.01 &amp;  &amp;  0.00 &amp;  0.00 &amp;  0.02 \\ 
+## 500 &amp;  &amp;  0.00 &amp;  0.00 &amp; -0.01 &amp;  &amp;  0.00 &amp;  0.00 &amp; -0.01 \\ 
+## \\
+## \\
+## \hline\hline
+## \end{tabular}%
+## }
+## \caption{ mean, median  }
+## \end{table}</code></pre>
+</div>
+<div id="generation-of-tables-for-partial-parameter-grids" class="section level3">
+<h3>Generation of Tables for Partial Parameter Grids</h3>
+<p>For large parameter grids, one might want to focus on a subset of the results. To achive this, just include the optional argument <em>partial_grid</em>. Here, the grids for <em>n</em> and <em>scale</em> both had three values and we only want to use the largest and the smallest values in the grids. We therefore supply a list with the names of the parameters and vectors specifying the positions of the values that we want to keep in the grid.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># use partial_grid</span>
+
+<span class="kw">MakeTable</span>(<span class="dt">output=</span>erg_mean_median, <span class="dt">rows=</span><span class="st">&quot;n&quot;</span>, <span class="dt">cols=</span><span class="kw">c</span>(<span class="st">&quot;scale&quot;</span>,<span class="st">&quot;list&quot;</span>), <span class="dt">digits=</span><span class="dv">2</span>,
+          <span class="dt">partial_grid=</span><span class="kw">list</span>(<span class="st">&quot;n&quot;</span>=<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">3</span>), <span class="st">&quot;scale&quot;</span>=<span class="kw">c</span>(<span class="dv">1</span>,<span class="dv">3</span>)), <span class="dt">include_meta=</span><span class="ot">FALSE</span>)</code></pre></div>
+<pre><code>## \begin{table}[h]
+## \centering
+## \resizebox{ 1 \textwidth}{!}{%
+## \begin{tabular}{ rrrrrrr }
+## \hline\hline\\\\
+##  list &amp;&amp; \multicolumn{ 2 }{c}{ mean } &amp;  &amp; \multicolumn{ 2 }{c}{ median } &amp;  &amp;  \\ 
+## n/scale &amp;  &amp; 1 &amp; 4 &amp;  &amp; 1 &amp; 4 \\ 
+##  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  \\ 
+## 50 &amp;  &amp; -0.01 &amp;  0.01 &amp;  &amp;  0.00 &amp;  0.03 \\ 
+## 500 &amp;  &amp;  0.00 &amp; -0.01 &amp;  &amp;  0.00 &amp; -0.01 \\ 
+## \\
+## \\
+## \hline\hline
+## \end{tabular}%
+## }
+## \caption{ mean, median  }
+## \end{table}</code></pre>
+</div>
+<div id="transformations-of-the-output" class="section level3">
+<h3>Transformations of the Output</h3>
+<p>The results in the tables above are hard to interpret, due to their scale. Both the <em>mean()</em> and <em>median()</em> have a bias that is close to zero, and there is barely a difference in the rounded values. However, if we change the number of digits displayed, we see that the bias of the <em>mean()</em> tends to be smaller than that of the <em>median()</em>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">MakeTable</span>(<span class="dt">output=</span>erg_mean_median, <span class="dt">rows=</span><span class="kw">c</span>(<span class="st">&quot;n&quot;</span>), <span class="dt">cols=</span><span class="kw">c</span>(<span class="st">&quot;scale&quot;</span>,<span class="st">&quot;list&quot;</span>), <span class="dt">digits=</span><span class="dv">4</span>, <span class="dt">include_meta=</span><span class="ot">FALSE</span>)</code></pre></div>
+<pre><code>## \begin{table}[h]
+## \centering
+## \resizebox{ 1 \textwidth}{!}{%
+## \begin{tabular}{ rrrrrrrrr }
+## \hline\hline\\\\
+##  list &amp;&amp; \multicolumn{ 3 }{c}{ mean } &amp;  &amp; \multicolumn{ 3 }{c}{ median } &amp;  &amp;  \\ 
+## n/scale &amp;  &amp; 1 &amp; 2 &amp; 4 &amp;  &amp; 1 &amp; 2 &amp; 4 \\ 
+##  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  \\ 
+## 50 &amp;  &amp; -0.0062 &amp;  0.0209 &amp;  0.0104 &amp;  &amp; -0.0011 &amp;  0.0243 &amp;  0.0260 \\ 
+## 250 &amp;  &amp; -0.0008 &amp; -0.0044 &amp;  0.0100 &amp;  &amp; -0.0010 &amp;  0.0040 &amp;  0.0179 \\ 
+## 500 &amp;  &amp; -0.0018 &amp; -0.0012 &amp; -0.0065 &amp;  &amp; -0.0023 &amp; -0.0026 &amp; -0.0104 \\ 
+## \\
+## \\
+## \hline\hline
+## \end{tabular}%
+## }
+## \caption{ mean, median  }
+## \end{table}</code></pre>
+<p>A simple way to make these differences visible without displaying to many digits is to change the unit, for example by multiplying all results with 100. This is where the <em>transform</em> argument of <em>MakeTable()</em> comes in handy.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">scale_table_100&lt;-function(x){x*<span class="dv">100</span>}
+
+<span class="kw">MakeTable</span>(<span class="dt">output=</span>erg_mean_median, <span class="dt">rows=</span><span class="kw">c</span>(<span class="st">&quot;n&quot;</span>), <span class="dt">cols=</span><span class="kw">c</span>(<span class="st">&quot;scale&quot;</span>,<span class="st">&quot;list&quot;</span>), <span class="dt">digits=</span><span class="dv">2</span>, <span class="dt">transform=</span><span class="kw">list</span>(scale_table_100, function(x){x*<span class="dv">100</span>}), <span class="dt">include_meta=</span><span class="ot">FALSE</span>)</code></pre></div>
+<pre><code>## \begin{table}[h]
+## \centering
+## \resizebox{ 1 \textwidth}{!}{%
+## \begin{tabular}{ rrrrrrrrr }
+## \hline\hline\\\\
+##  list &amp;&amp; \multicolumn{ 3 }{c}{ mean } &amp;  &amp; \multicolumn{ 3 }{c}{ median } &amp;  &amp;  \\ 
+## n/scale &amp;  &amp; 1 &amp; 2 &amp; 4 &amp;  &amp; 1 &amp; 2 &amp; 4 \\ 
+##  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  \\ 
+## 50 &amp;  &amp; -0.62 &amp;  2.09 &amp;  1.04 &amp;  &amp; -0.11 &amp;  2.43 &amp;  2.60 \\ 
+## 250 &amp;  &amp; -0.08 &amp; -0.44 &amp;  1.00 &amp;  &amp; -0.10 &amp;  0.40 &amp;  1.79 \\ 
+## 500 &amp;  &amp; -0.18 &amp; -0.12 &amp; -0.65 &amp;  &amp; -0.23 &amp; -0.26 &amp; -1.04 \\ 
+## \\
+## \\
+## \hline\hline
+## \end{tabular}%
+## }
+## \caption{ mean, median  }
+## \end{table}</code></pre>
+</div>
+<div id="collapse" class="section level3">
+<h3>Collapse</h3>
+<p>Since both estimators - the <em>mean()</em> and the <em>median()</em> are unbiased in this setup, comparing them by their bias might not be the most interesting analysis. Instead, we might be interested in other aspects of their distributions - for example their standard deviations. To modify the function used by <em>MakeTable()</em> to summarize the result from the <em>nrep</em> repetitions of the experiment, a list can be passed to <em>collapse</em> that contains the names of the functions that are supposed to be used to collapse the realisations of the estimators to a meaningful table. Here we use <em>sd()</em>, since we know that <em>mean()</em> is the more efficient estimator in this setup.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">MakeTable</span>(<span class="dt">output=</span>erg_mean_median, <span class="dt">rows=</span><span class="st">&quot;n&quot;</span>, <span class="dt">cols=</span><span class="kw">c</span>(<span class="st">&quot;scale&quot;</span>, <span class="st">&quot;list&quot;</span>), <span class="dt">digits=</span><span class="dv">2</span>, <span class="dt">collapse=</span><span class="kw">list</span>(<span class="st">&quot;sd&quot;</span>, <span class="st">&quot;sd&quot;</span>), <span class="dt">include_meta=</span><span class="ot">FALSE</span>)</code></pre></div>
+<pre><code>## \begin{table}[h]
+## \centering
+## \resizebox{ 1 \textwidth}{!}{%
+## \begin{tabular}{ rrrrrrrrr }
+## \hline\hline\\\\
+##  list &amp;&amp; \multicolumn{ 3 }{c}{ mean } &amp;  &amp; \multicolumn{ 3 }{c}{ median } &amp;  &amp;  \\ 
+## n/scale &amp;  &amp; 1 &amp; 2 &amp; 4 &amp;  &amp; 1 &amp; 2 &amp; 4 \\ 
+##  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  \\ 
+## 50 &amp;  &amp; 0.14 &amp; 0.29 &amp; 0.56 &amp;  &amp; 0.17 &amp; 0.35 &amp; 0.71 \\ 
+## 250 &amp;  &amp; 0.06 &amp; 0.13 &amp; 0.26 &amp;  &amp; 0.08 &amp; 0.15 &amp; 0.32 \\ 
+## 500 &amp;  &amp; 0.05 &amp; 0.09 &amp; 0.18 &amp;  &amp; 0.06 &amp; 0.11 &amp; 0.23 \\ 
+## \\
+## \\
+## \hline\hline
+## \end{tabular}%
+## }
+## \caption{ mean, median  }
+## \end{table}</code></pre>
+<p>Now, it is easy to see, that even though the bias terms are very similar, the <em>mean()</em> has a smaller variance than the <em>median()</em>.</p>
+</div>
+</div>
+<div id="non-nested-data-generating-processes" class="section level2">
+<h2>Non-Nested Data Generating Processes</h2>
+<p>One of the key concepts behind the design of <em>MonteCarlo()</em> is that it is generally assumed that the samples are generated from a data generated process that nests all the situations of interest. This is also the case in the examples discussed so far, where the data is generated from a normal distribution and only the standard deviation of the distribution and the number of observations change.</p>
+<p>However, this does not mean that <em>MonteCarlo()</em> cannot handle non-nested data generating processes. As an example, we consider the case where we want to compare the standard deviation of the <em>mean()</em> and the <em>median()</em> as we did above, but for samples from a normal distribution and from a uniform distribution. These are clearly non-nested. To deal with this situation, we include <em>DGP</em> as an additional argument in <em>mean_vs_median()</em> and create a case distinction, so that the value of <em>DGP</em> determines from which distribution the sample is generated. We then include the possible values of <em>DGP</em> in an additional parameter grid.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">mean_vs_median&lt;-function(n,scale,DGP){
+  
+  <span class="co"># generate sample</span>
+  
+  if(DGP==<span class="st">&quot;normal&quot;</span>){sample&lt;-<span class="kw">rnorm</span>(n, <span class="dv">0</span>, scale)}
+  
+  if(DGP==<span class="st">&quot;uniform&quot;</span>){
+    b&lt;-scale/(<span class="dv">2</span>*<span class="kw">sqrt</span>(<span class="dv">1</span>/<span class="dv">12</span>))
+    sample&lt;-<span class="kw">runif</span>(n, -b, b)
+  }
+  
+  <span class="co"># calculate estimators</span>
+  mean_sample&lt;-<span class="kw">mean</span>(sample)
+  median_sample&lt;-<span class="kw">median</span>(sample)
+  
+  <span class="co"># return results</span>
+  <span class="kw">return</span>(<span class="kw">list</span>(<span class="st">&quot;mean&quot;</span>=mean_sample, <span class="st">&quot;median&quot;</span>=median_sample))
+}
+
+n_grid&lt;-<span class="kw">c</span>(<span class="dv">50</span>, <span class="dv">250</span>, <span class="dv">500</span>)
+scale_grid&lt;-<span class="kw">c</span>(<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">4</span>)
+DGP_grid&lt;-<span class="kw">c</span>(<span class="st">&quot;normal&quot;</span>, <span class="st">&quot;uniform&quot;</span>)
+
+param_list=<span class="kw">list</span>(<span class="st">&quot;n&quot;</span>=n_grid, <span class="st">&quot;scale&quot;</span>=scale_grid, <span class="st">&quot;DGP&quot;</span>=DGP_grid)</code></pre></div>
+<p>Note that the width of the uniform distribution is specified so that both the Gaussian and the uniform distribution have a standard deviation of <em>scale</em>.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># run simulation:</span>
+
+erg_mean_median&lt;-<span class="kw">MonteCarlo</span>(<span class="dt">func=</span>mean_vs_median, <span class="dt">nrep=</span><span class="dv">1000</span>, <span class="dt">param_list=</span>param_list)</code></pre></div>
+<p>After running the simulation, we obtain the following results.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">MakeTable</span>(<span class="dt">output=</span>erg_mean_median, <span class="dt">rows=</span><span class="kw">c</span>(<span class="st">&quot;n&quot;</span>,<span class="st">&quot;DGP&quot;</span>), <span class="dt">cols=</span><span class="kw">c</span>(<span class="st">&quot;scale&quot;</span>, <span class="st">&quot;list&quot;</span>), <span class="dt">digits=</span><span class="dv">2</span>, <span class="dt">collapse=</span><span class="kw">list</span>(<span class="st">&quot;sd&quot;</span>, <span class="st">&quot;sd&quot;</span>), <span class="dt">include_meta=</span><span class="ot">FALSE</span>)</code></pre></div>
+<pre><code>## \begin{table}[h]
+## \centering
+## \resizebox{ 1 \textwidth}{!}{%
+## \begin{tabular}{ rrrrrrrrrr }
+## \hline\hline\\\\
+## &amp; list &amp;&amp; \multicolumn{ 3 }{c}{ mean } &amp;  &amp; \multicolumn{ 3 }{c}{ median } &amp;  &amp;  \\ 
+## DGP &amp; n/scale &amp;  &amp; 1 &amp; 2 &amp; 4 &amp;  &amp; 1 &amp; 2 &amp; 4 \\ 
+##  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  \\ 
+## \multirow{ 3 }{*}{ normal } &amp; 50 &amp;  &amp; 0.14 &amp; 0.29 &amp; 0.57 &amp;  &amp; 0.17 &amp; 0.35 &amp; 0.68 \\ 
+##  &amp; 250 &amp;  &amp; 0.06 &amp; 0.12 &amp; 0.25 &amp;  &amp; 0.08 &amp; 0.15 &amp; 0.31 \\ 
+##  &amp; 500 &amp;  &amp; 0.04 &amp; 0.09 &amp; 0.18 &amp;  &amp; 0.05 &amp; 0.11 &amp; 0.22 \\ 
+##  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  &amp;  \\ 
+## \multirow{ 3 }{*}{ uniform } &amp; 50 &amp;  &amp; 0.14 &amp; 0.29 &amp; 0.58 &amp;  &amp; 0.24 &amp; 0.48 &amp; 0.99 \\ 
+##  &amp; 250 &amp;  &amp; 0.06 &amp; 0.13 &amp; 0.25 &amp;  &amp; 0.11 &amp; 0.22 &amp; 0.43 \\ 
+##  &amp; 500 &amp;  &amp; 0.05 &amp; 0.09 &amp; 0.18 &amp;  &amp; 0.08 &amp; 0.15 &amp; 0.31 \\ 
+## \\
+## \\
+## \hline\hline
+## \end{tabular}%
+## }
+## \caption{ mean, median  }
+## \end{table}</code></pre>
+<p>We can see that the standard deviation of the <em>median()</em> is far larger for the uniform distribution whereas that of the <em>mean()</em> remains nearly unchanged.</p>
+<p>This example shows that <em>MonteCarlo()</em> is very versatile. Depending on the specification of <em>func</em>, it is possible to deal with non-nested DGPs. Similarly, multivariate outputs could be handled by splitting them in several elements and returning them seperately.</p>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

@@ -11,13 +11,13 @@ vignette: >
 
 Monte Carlo studies are a common tool in statistics and related fields. They are used for everything from the evaluation of the finite sample properties of new statistical methods to the generation of probability distributions for risk management.
 
-The MonteCarlo package for the R language provides tools to create simulation studies quickly and easily and it also allows to summarize the results in LaTex tables. This vignette gives details on the implementation of the MonteCarlo package and presents examples for its application.
+The MonteCarlo package for the R language provides tools to create simulation studies quickly and easily and it also allows to summarize the results in LaTeX tables. This vignette gives details on the implementation of the MonteCarlo package and presents examples for its application.
 
 There are only two main functions in the package:
 
-  1. *MonteCarlo()* runs a simulation study for a user defined parameter grid. It handles the generation of loops over these parameter grid and parallelizes the computation on a user specified number of CPU units. 
+  1. *MonteCarlo()* runs a simulation study for a user defined parameter grid. It handles the generation of loops over these parameter grid and parallelizes the computation on a user specified number of CPUs. 
   
-  1. *MakeTable()* creates LaTex tables from the output of *MonteCarlo()*. It stacks high dimensional output arrays into tables with a user specified ordering of rows and columns. 
+  1. *MakeTable()* creates LaTeX tables from the output of *MonteCarlo()*. It stacks high dimensional output arrays into tables with a user specified ordering of rows and columns. 
   
 To run a simulation study, the user has to nest both - the generation of a sample and the calculation of the desired statistics from this sample - in a single function. This function is passed to *MonteCarlo()*. No additional programming is required. 
 
@@ -113,7 +113,7 @@ Calling summary produces a short information on the simulation.
 
 As one can see from the summary, the simulation results are stored in an array of dimension `c(4,6,2,1000)`. The Monte Carlo repetitions are collected in the last dimension of the array. 
 
-To summarize the results in a reasonable way and to include them as a table in a paper or report, we have to represent them in a matrix. This is handled by the *MakeTable()* function, that stacks the submatrices collected in the array in the rows and columns of a new and larger matrix and prints the result in the form of Latex code to generate the desired table. 
+To summarize the results in a reasonable way and to include them as a table in a paper or report, we have to represent them in a matrix. This is handled by the *MakeTable()* function, that stacks the submatrices collected in the array in the rows and columns of a new and larger matrix and prints the result in the form of LaTeX code to generate the desired table. 
 
 To determine in which order the results are stacked in rows and columns, we supply the function arguments *rows* and *cols* that are vectors of the names of the parameters in the order in which we want them to appear in the table, sorted from the inside to the outside. 
 
@@ -132,7 +132,7 @@ To change the ordering, just change the vectors *rows* and *cols*. As can be see
 
 ```
 
-Now we can simply copy the LaTex code and add it to our paper, report or presentation. That is all. The user can focus on the design of the experiment that he is interested in and on the interpretation of the results.
+Now we can simply copy the LaTeX code and add it to our paper, report or presentation. That is all. The user can focus on the design of the experiment that he is interested in and on the interpretation of the results.
 
 We will now discuss the details of *MonteCarlo()* and *MakeTable()* and then give further examples.
 
@@ -196,11 +196,11 @@ Even though *func* might be programmed and tested carefully, there can be bugs t
 
 #### raw - Summarize the Output by Averaging Over the nrep Repetitions
 
-Sometimes it is not intended to run a large simulation study and to document the results in a Latex document. Instead one might want to conduct a little experiment and immediately see the result. If this is desired, one can set *raw=FALSE* and the output array will be aggregated by taking averages of the results for all *nrep* repetitions. For small parameter grids these can be viewed and interpreted directly.
+Sometimes it is not intended to run a large simulation study and to document the results in a LaTeX document. Instead one might want to conduct a little experiment and immediately see the result. If this is desired, one can set *raw=FALSE* and the output array will be aggregated by taking averages of the results for all *nrep* repetitions. For small parameter grids these can be viewed and interpreted directly.
 
 #### export_also - Data Export to the Cluster and Troubleshooting
 
-Different from functions and packages, *MonteCarlo()* currently does not support the automatic export of datasets used in *func* to the cluster. If this is desired, the respectve dataset has to be supplied as *export_also$data*.
+Different from functions and packages, *MonteCarlo()* currently does not support the automatic export of datasets used in *func* to the cluster. If this is desired, the respective dataset has to be supplied as *export_also$data*.
 In addition to that, *export_also* opens a backdoor in case of bugs that might hamper the automatic function and package export. To manually export a function or dataset or to load a package, pass a list to *export_also* where the list element is named "functions", "data" and/or "packages". For example: `export_also=list("data"=rnorm(100), "functions"=c("function_name_1", "function_name_2"), "packages"="package_name")`.
 
 ### The Recipe Behind MonteCarlo()
@@ -219,9 +219,11 @@ This recipe is applied for all simulations conducted with *MonteCarlo()*. The fu
 
 ### Arguments of MakeTable()
 
-As discussed above, the *MakeTable()* function handles the generation of Latex tables from the output of *MonteCarlo()*. Like the latter, it only has three required arguments. The first one - *output* - is a *MonteCarlo* object returned by the equally named function. The second and third are *rows* and *cols* that determine the ordering of the resulting table (from the inside to the outside). 
+As discussed above, the *MakeTable()* function handles the generation of LaTeX tables from the output of *MonteCarlo()*. Like the latter, it only has three required arguments. The first one - *output* - is a *MonteCarlo* object returned by the equally named function. The second and third are *rows* and *cols* that determine the ordering of the resulting table (from the inside to the outside). 
 
 If *func* returns a list with more than one element, each list element is shown in a separate table by default. This behavior can be modified by including the string *"list"* at the desired position in either *rows* or *cols*. 
+
+To compile *.tex*-files that contain tables generated by *MakeTable()*, make sure that \code{\usepackage{multirow}} is included in the preamble.
 
 Similar to *MonteCarlo()*, *MakeTable()* has a number of optional arguments that allow to modify the appearance of the generated table and the way the simulation results are summarized. An overview of the function arguments is given in the table below. Details will be discussed thereafter.
  
@@ -234,9 +236,9 @@ Similar to *MonteCarlo()*, *MakeTable()* has a number of optional arguments that
 | *digits* | Number of digits displayed in table. Default is digits=4.|
 | *collapse* | Optional list of the same length as *output* giving the names of functions to be applied to the repective components of *output* when collapsing the results to a table. By default *mean()* is used. Another example could be *sd()*.|
 | *transform* | Optional argument to transform the output table (for example from MSE to RMSE). If a function is supplied, it is applied to all tables. Alternatively, a list of functions can be supplied that has the same length as output. For tables that are supposed to stay unchanged set the respective list elements to *NULL*. |
-| *include\_meta* | Booloean that determines whether the meta data provided by *summary()* is included in comments below the table. Default is *include_meta=TRUE*.|
+| *include\_meta* | Boolean that determines whether the meta data provided by *summary()* is included in comments below the table. Default is *include_meta=TRUE*.|
 | *width_mult* | Scaling factor for width of the output table. Default is *width_mult=1*.|
-| *partial_grid* | An optional list with the elements named after of the parameters for which only a part of the grid values is supposed to be included in the table. Each component of the list is a vector that specifies the grid values of interest.|
+| *partial_grid* | An optional list with the elements named after the parameters for which only a part of the grid values is supposed to be included in the table. Each component of the list is a vector that specifies the grid values of interest.|
 
 
 #### digits - Determine the Number of Digits Printed
@@ -266,7 +268,7 @@ If this is not in the interest of the user - or the comments are just perceived 
 
 #### width_mult - Modify Width of the Table Relative to Text
 
-Without further modifications the Latex tables returned by *MakeTable()* are scaled to have the same width as the text in the document. This can be modified directly in the Latex code that is returned, but if the user already knows in advance that the table should be smaller, this can already specified by setting *width_mult* to the desired fraction of the text width.
+Without further modifications the LaTeX tables returned by *MakeTable()* are scaled to have the same width as the text in the document. This can be modified directly in the LaTeX code that is returned, but if the user already knows in advance that the table should be smaller, this can already specified by setting *width_mult* to the desired fraction of the text width.
 
 
 #### partial_grid - Print Table Only for Subsets of the Original Parameter Grid
@@ -277,7 +279,7 @@ To drop unwanted parts of the table, a list can be supplied to *partial_grid*, t
 
 ## MergeResults()
 
-*MergeResults()* is a utility function that allows to merge the MonteCarlo objects generated from multiple simulations using the same *func* and *param_list*. This can be useful, if a first test simulation is run with a small *nrep* and more reliable results are produced later with a larger *nrep*, or if multiple machines are used.
+*MergeResults()* is a utility function that allows to merge the *MonteCarlo* objects generated from multiple simulations using the same *func* and *param_list*. This can be useful, if a first test simulation is run with a small *nrep* and more reliable results are produced later with a larger *nrep*, or if multiple machines are used.
 
 There are only two required arguments. The first one, *path* specifies the path of the directory that contains the files that are supposed to be merged. The second one, *identifier* is a string that identifies which files should be merged. The string has to be a substring of the variable names of all files that are supposed to be merged, but it cannot be contained in the filenames of other files in the specified directory.
 
@@ -340,7 +342,7 @@ MakeTable(output=erg_mean_median, rows=c("n"), cols=c("scale","list"), digits=2,
 
 ### Generation of Tables for Partial Parameter Grids
 
-For large parameter grids, one might want to focus on a subset of the results. To achive this, just include the optinal argument *partial_grid*. Here, the grids for *n* and *scale* both had three values and we only want to use the largest and the smallest values in the grids. We therefore supply a list with the names of the parameters and vectors specifying the positions of the values that we want to keep in the grid.
+For large parameter grids, one might want to focus on a subset of the results. To achive this, just include the optional argument *partial_grid*. Here, the grids for *n* and *scale* both had three values and we only want to use the largest and the smallest values in the grids. We therefore supply a list with the names of the parameters and vectors specifying the positions of the values that we want to keep in the grid.
 
 ```{r}
 # use partial_grid
@@ -359,7 +361,7 @@ The results in the tables above are hard to interpret, due to their scale. Both 
 MakeTable(output=erg_mean_median, rows=c("n"), cols=c("scale","list"), digits=4, include_meta=FALSE)
 ```
 
-A simple way to make these differences visible without displaying to many digits is to change the unit, for exampe by multiplying all results with 100. This is where the *transform* argument of *MakeTable()* comes in handy.
+A simple way to make these differences visible without displaying to many digits is to change the unit, for example by multiplying all results with 100. This is where the *transform* argument of *MakeTable()* comes in handy.
 
 ```{r}
 scale_table_100<-function(x){x*100}

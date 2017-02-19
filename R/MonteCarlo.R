@@ -21,9 +21,10 @@ backtick_binaries<-function(vec_of_strings){
 
 #'Runs Monte Carlo. For details see documentation of wrapper function.
 #'@keywords internal
+#'@importFrom utils txtProgressBar
 #'@import snowfall
 
-MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=1, max_grid=1000, packages=NULL, export_functions=NULL, debug=FALSE){
+MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, packages=NULL, export_functions=NULL, debug=FALSE){
   
   # ------- extract information from parameter list
   n_param<-length(param_list)                                                       # number of parameters
@@ -76,6 +77,7 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=1, max_grid=1000, pac
   s2<-paste("suppressMessages(sfInit(parallel=if(ncpus>1){TRUE}else{FALSE}, cpus = ncpus, type= 'SOCK'));",
             aux.s2,"sfClusterEval(.libPaths(libloc_strings));",
             if(length(packages)>0){paste("capture.output(suppressMessages(sfLibrary(",packages,")));", sep="", collapse="")}else{""},
+            if(ncpus>1){"sfClusterSetupRNG();"}else{""},
             "erg<-sfApply(as.matrix(1:nrep,nrep,1),margin=1,fun=func2,",subm_param,");suppressMessages(sfStop());",sep="", collapse="")
   
   s3<-paste(paste(paste("results$",ret_vals,"[",sep=""),
@@ -111,7 +113,7 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=1, max_grid=1000, pac
 
 #############################################################
 
-#' @title Parallized Monte Carlo simulation.
+#' @title Parallized Monte Carlo Simulation
 #' @description \code{MonteCarlo} runs a Monte Carlo simulation study for a correctly specified function and the desired parameter grids. 
 #' See details for instructions on the specification of the function.
 #' @details 
@@ -130,22 +132,22 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=1, max_grid=1000, pac
 #' For the estimation of the required simulation time, 
 #' a separate simulation is run on a reduced grid that only contains the extreme points 
 #' for each parameter, e.g. the smallest and the largest sample size. 
-#' This test simulation is carried out with \math{nrep/10} repetitions and the required 
+#' This test simulation is carried out with \code{nrep/10} repetitions and the required 
 #' simulation time is estimated by a linear interpolation. Since the computational complexity is
 #' usually a convex function of the sample size and the dimension of the process, this approach 
 #' tends to overestimate the time required. 
 #' 
-#' export_also allows to export data to the cluster in case parallized computations on a dataset are desired. 
+#' \code{export_also} allows to export data to the cluster in case parallized computations on a dataset are desired. 
 #' It also allows to bypass the automatic export of functions and packages. 
-#' To manually export a function or dataset or to load a package, pass a list to export_also where the list element is named
+#' To manually export a function or dataset or to load a package, pass a list to \code{export_also} where the list element is named
 #' "functions", "data" and/or "packages". For example: \code{export_also=list("functions"=c("function_name_1", "function_name_2"), 
 #' "packages"="package_name")}.
 #' 
 #' @param func The function to be evaluated. See details.
 #' @param nrep An integer that specifies the desired number of Monte Carlo repetitions.
-#' @param param_list A list whose components are named after the parameters of func and each component is a vector containing the desired grid values for that parameter
-#' @param ncpus An integer specifying the number of cpus to be used. Default is ncpus=1. 
-#' For ncpus>1 the simulation is parallized automatically using ncpus cpu units.
+#' @param param_list A list whose components are named after the parameters of \code{func} and each component is a vector containing the desired grid values for that parameter
+#' @param ncpus An integer specifying the number of cpus to be used. Default is \code{ncpus=1}. 
+#' For \code{ncpus>1} the simulation is parallized automatically using \code{ncpus} cpu units.
 #' @param raw Boolean that specifies whether the output should be averaged over the nrep repetitions. Default is \code{raw=TRUE}.
 #' @param max_grid Integer that specifies for which grid size to throw an error, if grid becomes to large. Default is \code{max_grid=1000}.
 #' @param time_n_test Boolean that specifies whether the required simulation time should be estimated (useful for large simulations or slow functions). 
@@ -154,10 +156,12 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=1, max_grid=1000, pac
 #' Default is \code{save_res=FALSE}.
 #' @param debug Boolean that activates/deactivates the debug mode. If \code{debug=TRUE} all relevant variables are assigned to the global environment
 #' and the core loop is printed. This allows to run it manually and to see how MonteCarlo works internally. Default is \code{debug=FALSE}.
-#' @param export_also list specifying additional objects that are supposed to be exported to the cluster. 
+#' @param export_also List specifying additional objects that are supposed to be exported to the cluster. 
 #' This allows to export data or to bypass the automatic export of functions. Default is \code{export_also=NULL}. See details.
-#' @return A list of type MonteCarlo.
+#' @return A list of type \code{MonteCarlo}.
 #' @import codetools
+#' @importFrom utils capture.output
+#' @importFrom utils packageDescription
 #' @examples
 #' test_func<-function(n,loc,scale){
 #'  sample<-rnorm(n, loc, scale)
@@ -318,7 +322,7 @@ MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test
     for(i in 1:n_param){dim_vec2[i]<-length(param_list2[[i]])}                          # construct vector with grid dimensions
     grid_size2<-prod(dim_vec2)
     t1<-Sys.time()
-    erg_pre<-MC_inner(func=func, nrep=nrep/10, param_list=param_list2, ret_vals=ret_vals, ncpus=ncpus, raw=raw, max_grid=max_grid, packages=packages, export_functions=export_functions, debug=debug)
+    erg_pre<-MC_inner(func=func, nrep=nrep/10, param_list=param_list2, ret_vals=ret_vals, ncpus=ncpus, max_grid=max_grid, packages=packages, export_functions=export_functions, debug=debug)
     t2<-Sys.time()
     time<-(t2-t1)*grid_size/grid_size2*10    
     cat(paste("Estimated time required:", round(as.numeric(time)), attributes(time)$units, "\n", "\n"))
@@ -354,19 +358,18 @@ MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test
 
 
 #'@export
-summary.MonteCarlo<-function(x){
+summary.MonteCarlo<-function(object, ...){
 
-  #out<-list()
   cat("Simulation of function: \n\n")
-  print(x$meta$func)
+  print(object$meta$func)
   cat("\n")
-  cat("Required time:", x$meta$time, units(x$meta$time), "for nrep =", x$meta$nrep, " repetitions on", x$meta$ncpus, "CPUs \n\n")
+  cat("Required time:", object$meta$time, units(object$meta$time), "for nrep =", object$meta$nrep, " repetitions on", object$meta$ncpus, "CPUs \n\n")
   cat("Parameter grid:", "\n\n")
-  for(i in 1:length(x$param_list)){
-    nchar_max<-max(nchar(names(x$param_list)))    
-    cat(if(nchar(names(x$param_list)[i])!=nchar_max){paste(rep(" ",(nchar_max-nchar(names(x$param_list)[i]))),collapse="")}else{""},names(x$param_list)[i],":", x$param_list[[i]], "\n")
+  for(i in 1:length(object$param_list)){
+    nchar_max<-max(nchar(names(object$param_list)))    
+    cat(if(nchar(names(object$param_list)[i])!=nchar_max){paste(rep(" ",(nchar_max-nchar(names(object$param_list)[i]))),collapse="")}else{""},names(object$param_list)[i],":", object$param_list[[i]], "\n")
   }
   cat("\n","\n")
-  cat(length(x$results),"output arrays of dimensions:",dim(x$results[[1]]))
+  cat(length(object$results),"output arrays of dimensions:",dim(object$results[[1]]))
   
 }

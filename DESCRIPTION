@@ -12,12 +12,17 @@ URL: http://github.com/FunWithR/MonteCarlo
 BugReports: http://github.com/FunWithR/MonteCarlo/issues
 License: GPL-2
 Depends:
-    R (>= 3.1.2)
+    R (>= 3.0.2)
 Imports:
     abind(>= 1.4-0),
-    codetools(>= 0.2-14),
-    snowfall(>= 1.84-6)
+    codetools(>= 0.2-8),
+    rlecuyer(>= 0.3-4),
+    snow(>= 0.4-1),
+    snowfall(>= 1.84-4),
+    stats(>= 3.0.2),
+    utils(>= 3.0.2)
 RoxygenNote: 5.0.1
 Suggests: knitr,
-    rmarkdown
+    rmarkdown,
+    testthat
 VignetteBuilder: knitr
