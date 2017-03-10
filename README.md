@@ -103,7 +103,7 @@ Calling summary produces a short information on the simulation.
     ##     return(list("decision"=decision))
     ## }
     ## 
-    ## Required time: 14.72 secs for nrep = 1000  repetitions on 1 CPUs 
+    ## Required time: 11.95 secs for nrep = 1000  repetitions on 1 CPUs 
     ## 
     ## Parameter grid: 
     ## 
@@ -188,7 +188,7 @@ The MonteCarlo package provides several options to modify the behavior of *Monte
 The MonteCarlo() Function
 -------------------------
 
-As can be seen from the table below, the *MonteCarlo()* function has a number of optional arguments. The most important ones among them are *export\_also* that is needed to export datasets if these are required in a parallezied simulation, *debug* that turns on the debug mode and *time\_n\_test* that produces an estimate of the time required for the desired simulation.
+As can be seen from the table below, the *MonteCarlo()* function has a number of optional arguments. The most important ones among them are *export\_also* that is needed to export datasets if these are required in a parallezied simulation <!--,*debug* that turns on the debug mode--> and *time\_n\_test* that produces an estimate of the time required for the desired simulation.
 
 <table style="width:83%;">
 <colgroup>
@@ -230,20 +230,12 @@ As can be seen from the table below, the *MonteCarlo()* function has a number of
 <td align="center">save_res</td>
 <td align="left">Boolean that specifies whether the results of time_n_test should be saved to the current directory. Default is save_res=FALSE.</td>
 </tr>
-<tr class="even">
-<td align="center">debug</td>
-<td align="left">Boolean that activates/deactivates the debug mode. If debug=TRUE all relevant variables are assigned to the global environment and the core loop is printed. This allows to run it manually and to see how MonteCarlo works internally. Default is debug=FALSE.</td>
-</tr>
-<tr class="odd">
-<td align="center">raw</td>
-<td align="left">Boolean that specifies whether the output should be averaged over the nrep repetitions. Default is raw=TRUE.</td>
-</tr>
-<tr class="even">
-<td align="center">export_also</td>
-<td align="left">A list that specifies additional objects that are supposed to be exported to the cluster. This allows to export data or to bypass the automatic export of functions. Default is export_also=NULL.</td>
-</tr>
 </tbody>
 </table>
+
+<!--| debug | Boolean that activates/deactivates the debug mode. If debug=TRUE all relevant variables are assigned to the global environment and the core loop is printed. This allows to run it manually and to see how MonteCarlo works internally. Default is debug=FALSE. |-->
+raw | Boolean that specifies whether the output should be averaged over the nrep repetitions. Default is raw=TRUE. |
+export\_also | A list that specifies additional objects that are supposed to be exported to the cluster. This allows to export data or to bypass the automatic export of functions. Default is export\_also=NULL.|
 
 The MakeTable() Function
 ------------------------
