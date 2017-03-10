@@ -2,7 +2,7 @@ Package: MonteCarlo
 Type: Package
 Title: Automatically runs parallized Monte Carlo simulations
 Version: 1.0.0.9000
-Date: 2016-07-21
+Date: 2017-03-10
 Author: Christian Hendrik Leschinski
 Maintainer: Christian Hendrik Leschinski <leschinski@statistik.uni-hannover.de>
 Description: The Monte Carlo package simplifies Monte Carlo simulation studies
