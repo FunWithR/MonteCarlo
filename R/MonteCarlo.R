@@ -24,7 +24,8 @@ backtick_binaries<-function(vec_of_strings){
 #'@importFrom utils txtProgressBar
 #'@import snowfall
 
-MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, packages=NULL, export_functions=NULL, debug=FALSE){
+MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, packages=NULL, export_functions=NULL){
+  #, debug=FALSE
   
   # ------- extract information from parameter list
   n_param<-length(param_list)                                                       # number of parameters
@@ -90,21 +91,21 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, pac
   all_loops<-paste(c(s1,s2,s3,s4), collapse="")
   rep<-0
   
-  if(debug==TRUE){
-    iterator<-c("nrep","ncpus","rep","pb","func","func2","results","libloc_strings")
-    for(i in 1:length(iterator)){
-      assign(iterator[i], get(iterator[i]), envir = .GlobalEnv)
-    }
-    for(i in 1:n_param){
-      assign(paste(param_names[i], "_grid", sep=""), param_list[[i]], envir = .GlobalEnv)
-    }
-    format.aux<-gsub(pattern=";", replacement=" \n ", x=all_loops)
-    format.aux<-gsub(pattern="\\{", replacement=" \\{\n ", x=format.aux)
-    format.aux<-gsub(pattern="\\}", replacement=" \n\\} ", x=format.aux)
-    cat("\n","\n")
-    cat(format.aux)
-    return("Inner loops printed and relevant variables defined in global environment.")
-  }
+  #if(debug==TRUE){
+  #  iterator<-c("nrep","ncpus","rep","pb","func","func2","results","libloc_strings")
+  #  for(i in 1:length(iterator)){
+  #    assign(iterator[i], get(iterator[i]), envir = .GlobalEnv)
+  #  }
+  #  for(i in 1:n_param){
+  #    assign(paste(param_names[i], "_grid", sep=""), param_list[[i]], envir = .GlobalEnv)
+  #  }
+  #  format.aux<-gsub(pattern=";", replacement=" \n ", x=all_loops)
+  #  format.aux<-gsub(pattern="\\{", replacement=" \\{\n ", x=format.aux)
+  #  format.aux<-gsub(pattern="\\}", replacement=" \n\\} ", x=format.aux)
+  #  cat("\n","\n")
+  #  cat(format.aux)
+  #  return("Inner loops printed and relevant variables defined in global environment.")
+  #}
   
   eval(parse(text=all_loops))
   return(results)
@@ -154,8 +155,8 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, pac
 #' See details. Default is \code{time_n_test=FALSE}.
 #' @param save_res Boolean that specifies whether the results of \code{time_n_test} should be saved to the current directory. 
 #' Default is \code{save_res=FALSE}.
-#' @param debug Boolean that activates/deactivates the debug mode. If \code{debug=TRUE} all relevant variables are assigned to the global environment
-#' and the core loop is printed. This allows to run it manually and to see how MonteCarlo works internally. Default is \code{debug=FALSE}.
+# #' @param debug Boolean that activates/deactivates the debug mode. If \code{debug=TRUE} all relevant variables are assigned to the global environment
+# #' and the core loop is printed. This allows to run it manually and to see how MonteCarlo works internally. Default is \code{debug=FALSE}.
 #' @param export_also List specifying additional objects that are supposed to be exported to the cluster. 
 #' This allows to export data or to bypass the automatic export of functions. Default is \code{export_also=NULL}. See details.
 #' @return A list of type \code{MonteCarlo}.
@@ -185,8 +186,10 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, pac
 #'
 #'@export
 
-MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test=FALSE, save_res=FALSE, debug=FALSE, raw=TRUE, export_also=NULL){
-
+MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test=FALSE, save_res=FALSE, raw=TRUE, export_also=NULL){
+  # , debug=FALSE
+  
+  
   # -------- check whether arguments supplied to function are admissable 
     
   if(is.function(func)==FALSE)stop("func must be a function")
@@ -322,7 +325,7 @@ MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test
     for(i in 1:n_param){dim_vec2[i]<-length(param_list2[[i]])}                          # construct vector with grid dimensions
     grid_size2<-prod(dim_vec2)
     t1<-Sys.time()
-    erg_pre<-MC_inner(func=func, nrep=nrep/10, param_list=param_list2, ret_vals=ret_vals, ncpus=ncpus, max_grid=max_grid, packages=packages, export_functions=export_functions, debug=debug)
+    erg_pre<-MC_inner(func=func, nrep=nrep/10, param_list=param_list2, ret_vals=ret_vals, ncpus=ncpus, max_grid=max_grid, packages=packages, export_functions=export_functions) # , debug=debug
     t2<-Sys.time()
     time<-(t2-t1)*grid_size/grid_size2*10    
     cat(paste("Estimated time required:", round(as.numeric(time)), attributes(time)$units, "\n", "\n"))
@@ -334,7 +337,7 @@ MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test
     }
   }
   t1<-Sys.time()
-  erg<-MC_inner(func=func,nrep=nrep,param_list=param_list, ret_vals=ret_vals, ncpus=ncpus, max_grid=max_grid, packages=packages, export_functions=export_functions, debug=debug)
+  erg<-MC_inner(func=func,nrep=nrep,param_list=param_list, ret_vals=ret_vals, ncpus=ncpus, max_grid=max_grid, packages=packages, export_functions=export_functions) # , debug=debug
   t2<-Sys.time()
   out<-list()
   class(out)<-"MonteCarlo"

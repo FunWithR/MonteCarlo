@@ -5,8 +5,7 @@
 \title{Parallized Monte Carlo Simulation}
 \usage{
 MonteCarlo(func, nrep, param_list, ncpus = 1, max_grid = 1000,
-  time_n_test = FALSE, save_res = FALSE, debug = FALSE, raw = TRUE,
-  export_also = NULL)
+  time_n_test = FALSE, save_res = FALSE, raw = TRUE, export_also = NULL)
 }
 \arguments{
 \item{func}{The function to be evaluated. See details.}
@@ -25,9 +24,6 @@ See details. Default is \code{time_n_test=FALSE}.}
 
 \item{save_res}{Boolean that specifies whether the results of \code{time_n_test} should be saved to the current directory. 
 Default is \code{save_res=FALSE}.}
-
-\item{debug}{Boolean that activates/deactivates the debug mode. If \code{debug=TRUE} all relevant variables are assigned to the global environment
-and the core loop is printed. This allows to run it manually and to see how MonteCarlo works internally. Default is \code{debug=FALSE}.}
 
 \item{raw}{Boolean that specifies whether the output should be averaged over the nrep repetitions. Default is \code{raw=TRUE}.}
 
