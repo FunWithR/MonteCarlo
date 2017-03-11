@@ -3,13 +3,13 @@
 The MonteCarlo Package
 ======================
 
-The MonteCarlo package allows to create simulation studies and to summarize their results in Latex tables quickly and easily. In the following, an example for the use of the MonteCarlo package is presented. In addition to that, there is a brief discussion of the more advanced features of the package. Further information is included in the package vignette.
+The MonteCarlo package allows to create simulation studies and to summarize their results in LaTeX tables quickly and easily. In the following, an example for the use of the MonteCarlo package is presented. In addition to that, there is a brief discussion of the more advanced features of the package. Further information is included in the package vignette.
 
 There are only two main functions in the package:
 
 1.  *MonteCarlo()* runs a simulation study for a user defined parameter grid. It handles the generation of loops over these parameter grid and parallelizes the computation on a user specified number of CPU units.
 
-2.  *MakeTable()* creates LaTex tables from the output of *MonteCarlo()*. It stacks high dimensional output arrays into tables with a user specified ordering of rows and columns.
+2.  *MakeTable()* creates LaTeX tables from the output of *MonteCarlo()*. It stacks high dimensional output arrays into tables with a user specified ordering of rows and columns.
 
 To run a simulation study, the user has to nest both - the generation of a sample and the calculation of the desired statistics from this sample - in a single function. This function is passed to *MonteCarlo()*. No additional programming is required.
 
@@ -103,7 +103,7 @@ Calling summary produces a short information on the simulation.
     ##     return(list("decision"=decision))
     ## }
     ## 
-    ## Required time: 11.95 secs for nrep = 1000  repetitions on 1 CPUs 
+    ## Required time: 12.33 secs for nrep = 1000  repetitions on 1 CPUs 
     ## 
     ## Parameter grid: 
     ## 
@@ -116,7 +116,7 @@ Calling summary produces a short information on the simulation.
 
 As one can see from the summary, the simulation results are stored in an array of dimension `c(4,6,2,1000)`, where the Monte Carlo repetitions are collected in the last dimension of the array.
 
-To summarize the results in a reasonable way and to include them as a table in a paper or report, we have to represent them in a matrix. This is handled by the *MakeTable()* function that stacks the submatrices collected in the array in the rows and columns of a matrix and prints the result in the form of code to generate a Latex table.
+To summarize the results in a reasonable way and to include them as a table in a paper or report, we have to represent them in a matrix. This is handled by the *MakeTable()* function that stacks the submatrices collected in the array in the rows and columns of a matrix and prints the result in the form of code to generate a LaTeX table.
 
 To determine in which order the results are stacked in rows and columns, we supply the function arguments *rows* and *cols*. These are vectors of the names of the parameters in the order in which we want them to appear in the table (sorted from the inside to the outside).
 

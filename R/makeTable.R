@@ -94,7 +94,7 @@ ret
 #' scale_grid<-c(1,2)
 #'
 #' param_list=list("n"=n_grid, "loc"=loc_grid, "scale"=scale_grid)
-#' erg<-MonteCarlo(func=test_func, nrep=1000, param_list=param_list, ncpus=1)
+#' erg<-MonteCarlo(func=test_func, nrep=250, param_list=param_list, ncpus=1)
 #' str(erg)
 #'
 #' rows<-c("n")
@@ -131,7 +131,7 @@ ret
 #' scale_grid<-c(1,2)
 #'
 #' param_list=list("n"=n_grid, "loc"=loc_grid, "scale"=scale_grid)
-#' erg_mean_median<-MonteCarlo(func=func, nrep=1000, param_list=param_list, ncpus=1)
+#' erg_mean_median<-MonteCarlo(func=func, nrep=250, param_list=param_list, ncpus=1)
 #'
 #' rows<-c("n")
 #' cols<-c("loc","scale")

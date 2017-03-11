@@ -77,7 +77,7 @@ loc_grid<-seq(0,1,0.2)
 scale_grid<-c(1,2)
 
 param_list=list("n"=n_grid, "loc"=loc_grid, "scale"=scale_grid)
-erg<-MonteCarlo(func=test_func, nrep=1000, param_list=param_list, ncpus=1)
+erg<-MonteCarlo(func=test_func, nrep=250, param_list=param_list, ncpus=1)
 summary(erg)
 
 rows<-c("n")
