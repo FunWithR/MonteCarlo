@@ -12,8 +12,7 @@ URL: http://github.com/FunWithR/MonteCarlo
 BugReports: http://github.com/FunWithR/MonteCarlo/issues
 License: GPL-2
 Depends:
-    R (>= 3.0.2)
-Imports:
+    R (>= 3.0.2),
     abind(>= 1.4-0),
     codetools(>= 0.2-8),
     rlecuyer(>= 0.3-4),

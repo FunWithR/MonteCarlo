@@ -22,7 +22,9 @@ backtick_binaries<-function(vec_of_strings){
 #'Runs Monte Carlo. For details see documentation of wrapper function.
 #'@keywords internal
 #'@importFrom utils txtProgressBar
+#'@import snow
 #'@import snowfall
+#'@import rlecuyer
 
 MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, packages=NULL, export_functions=NULL){
   #, debug=FALSE
