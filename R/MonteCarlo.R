@@ -71,6 +71,8 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, pac
   
   libloc_strings<-.libPaths()
   
+  
+  
   s1<-paste(paste(c(paste("for(",index, " in 1:", dim_vec,"){", sep="",collapse=""),
                     "rep<-rep+1;setTxtProgressBar(pb, rep);"),collapse=""),assign_param_values, sep="",collapse="")
   
@@ -80,7 +82,8 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, pac
   s2<-paste("suppressMessages(sfInit(parallel=if(ncpus>1){TRUE}else{FALSE}, cpus = ncpus, type= 'SOCK'));",
             aux.s2,"sfClusterEval(.libPaths(libloc_strings));",
             if(length(packages)>0){paste("capture.output(suppressMessages(sfLibrary(",packages,")));", sep="", collapse="")}else{""},
-            if(ncpus>1){"sfClusterSetupRNG();"}else{""},
+            'seed<-as.numeric(paste(sample(0:9,10,replace=TRUE), collapse=""));',
+            if(ncpus>1){"sfClusterSetupRNG(seed=rep(seed,6));"}else{""},
             "erg<-sfApply(as.matrix(1:nrep,nrep,1),margin=1,fun=func2,",subm_param,");suppressMessages(sfStop());",sep="", collapse="")
   
   s3<-paste(paste(paste("results$",ret_vals,"[",sep=""),
@@ -108,7 +111,6 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, pac
   #  cat(format.aux)
   #  return("Inner loops printed and relevant variables defined in global environment.")
   #}
-  
   eval(parse(text=all_loops))
   return(results)
 }
@@ -260,20 +262,21 @@ MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test
   
   export_functions<-c(export_functions,export_also$functions,export_also$data)
   
-  
   # -------- Find out which packages have to be loaded into cluster
   
-  all_env<-search() #list all environments
-  env_names<-unlist(strsplit(all_env[grep(":", all_env)], split=":")) # keep only those environments that refer to packages
-  env_names<-env_names[-which(env_names=="package")]
+  if(is.null(all_funcs_found)==FALSE){
+    all_env<-search() #list all environments
+    env_names<-unlist(strsplit(all_env[grep(":", all_env)], split=":")) # keep only those environments that refer to packages
+    env_names<-env_names[-which(env_names=="package")]
   
-  packages<-NULL #loop through non-primitive functions used in func and check from which package they are
-  for(i in 1:length(all_funcs_found)){
-    if(environmentName(environment(eval(parse(text=all_funcs_found[i]))))%in%env_names){
-      packages<-c(packages,env_names[which(env_names==environmentName(environment(eval(parse(text=all_funcs_found[i])))))])
+    packages<-NULL #loop through non-primitive functions used in func and check from which package they are
+    for(i in 1:length(all_funcs_found)){
+      if(environmentName(environment(eval(parse(text=all_funcs_found[i]))))%in%env_names){
+        packages<-c(packages,env_names[which(env_names==environmentName(environment(eval(parse(text=all_funcs_found[i])))))])
+      }
     }
+    packages<-unique(packages[packages!="base"])
   }
-  packages<-unique(packages[packages!="base"])
   
   dependencies_list<-NULL # loop through packages found and collect their dependencies in character vector
   if(length(packages)>0){
@@ -290,6 +293,7 @@ MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test
   
   packages<-c(packages,export_also$packages)
   
+
   # --------- sort param list according to order in arg_list
   
   arg_list<-as.list(args(func))
@@ -316,6 +320,7 @@ MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test
   
   if(grid_size>max_grid)stop("Grid size is very large. If you still want to run the simulation change max_grid.")
   
+  
   if(time_n_test==TRUE){
     cat("Running test simulation to estimate simulation time required.","\n","\n")
     param_list2<-list()
@@ -338,9 +343,11 @@ MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test
       cat(paste("Output of testrun written to:", paste(getwd(), "/", filename, sep=""), "\n", "\n"))
     }
   }
+
   t1<-Sys.time()
   erg<-MC_inner(func=func,nrep=nrep,param_list=param_list, ret_vals=ret_vals, ncpus=ncpus, max_grid=max_grid, packages=packages, export_functions=export_functions) # , debug=debug
   t2<-Sys.time()
+  
   out<-list()
   class(out)<-"MonteCarlo"
   out$results<-erg
