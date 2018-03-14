@@ -82,7 +82,7 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, pac
   s2<-paste("suppressMessages(sfInit(parallel=if(ncpus>1){TRUE}else{FALSE}, cpus = ncpus, type= 'SOCK'));",
             aux.s2,"sfClusterEval(.libPaths(libloc_strings));",
             if(length(packages)>0){paste("capture.output(suppressMessages(sfLibrary(",packages,")));", sep="", collapse="")}else{""},
-            'seed<-as.numeric(paste(sample(0:9,10,replace=TRUE), collapse=""));',
+            'seed<-as.numeric(paste(sample(0:9,5,replace=TRUE), collapse=""));',
             if(ncpus>1){"sfClusterSetupRNG(seed=rep(seed,6));"}else{""},
             "erg<-sfApply(as.matrix(1:nrep,nrep,1),margin=1,fun=func2,",subm_param,");suppressMessages(sfStop());",sep="", collapse="")
   
@@ -205,6 +205,8 @@ MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test
   
   param_names<-names(param_list)
   test_run<-eval(parse(text=paste("func(",paste(param_names,"=param_list[[",1:length(param_names),"]][1]", sep="", collapse=","),")", collapse="", sep="")))
+  test_run2<-eval(parse(text=paste("func(",paste(param_names,"=param_list[[",1:length(param_names),"]][1]", sep="", collapse=","),")", collapse="", sep="")))
+  if(unlist(test_run)==unlist(test_run2))stop("func does not contain a random experiment.")
   ret_vals<-gsub(" ", "_", names(test_run))
   
   if(is.list(test_run)==FALSE)stop("func has to return a list with named components. each component has to be scalar.")
@@ -264,19 +266,19 @@ MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test
   
   # -------- Find out which packages have to be loaded into cluster
   
+  packages<-NULL
   if(is.null(all_funcs_found)==FALSE){
     all_env<-search() #list all environments
     env_names<-unlist(strsplit(all_env[grep(":", all_env)], split=":")) # keep only those environments that refer to packages
     env_names<-env_names[-which(env_names=="package")]
   
-    packages<-NULL #loop through non-primitive functions used in func and check from which package they are
+    #loop through non-primitive functions used in func and check from which package they are
     for(i in 1:length(all_funcs_found)){
       if(environmentName(environment(eval(parse(text=all_funcs_found[i]))))%in%env_names){
         packages<-c(packages,env_names[which(env_names==environmentName(environment(eval(parse(text=all_funcs_found[i])))))])
       }
     }
     packages<-unique(packages[packages!="base"])
-  }
   
   dependencies_list<-NULL # loop through packages found and collect their dependencies in character vector
   if(length(packages)>0){
@@ -288,11 +290,12 @@ MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test
     sort_out<-which(packages%in%dependencies_list)
     if(length(sort_out)>0){packages<-packages[-sort_out]}  # keep only those packages that are not automatically included because they are dependencies
   }
+  }
   
   # -- add packages that are specified in export_also
   
   packages<-c(packages,export_also$packages)
-  
+    
 
   # --------- sort param list according to order in arg_list
   

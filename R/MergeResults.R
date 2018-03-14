@@ -7,7 +7,7 @@
 #' other files in the directory.
 #' @param identifier String that is common to the names of the files that are supposed to be merged.
 #' @param path String specifying the path to directory that contains the files.
-#' @import abind
+#' @importFrom abind abind
 #' @examples 
 #' \donttest{out<-MergeResults(identifier="MonteCarloResults", path="C:/Users/")
 #' summary(out)}

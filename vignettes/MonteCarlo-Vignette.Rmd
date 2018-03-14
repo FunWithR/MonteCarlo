@@ -176,7 +176,7 @@ The only other required argument of *MonteCarlo()* is *nrep* that determines the
 
 #### ncpus - Automatized Parallelization
 
-If *ncpus* is set to an integer value larger than one, the simulation is conducted parallized on a *snow* cluster with the respective number of slaves. Make sure that the machine you are using has the respective number of CPU units available. The parallelization builds on the snowfall package. The setup of the cluster including the export of the necessary functions and packages to the workers are handled automatically. *MonteCarlo()* autmatically analyzes *func* to determine the required functions and packages. It can even deal with nested dependencies, where *func* relies on functions that make use of other functions, and so on. The only precondition is that these functions are available in the workspace - as they have to be if one would just want to run *func* on its own.
+If *ncpus* is set to an integer value larger than one, the simulation is conducted parallized on a *snow* cluster with the respective number of slaves. Make sure that the machine you are using has the respective number of CPU units available. The parallelization builds on the snowfall package. The setup of the cluster including the export of the necessary functions and packages to the workers are handled automatically. If *func* uses objects in the global workspace, such as lookup tables or data sets, these are also exported. *MonteCarlo()* autmatically analyzes *func* to determine the required functions and packages. It can even deal with nested dependencies, where *func* relies on functions that make use of other functions, and so on. The only precondition is that these functions are available in the workspace - as they have to be if one would just want to run *func* on its own.
 
 #### max_grid - Warning for Excessively Large Parameter Grids
 
@@ -249,7 +249,7 @@ Similar to *MonteCarlo()*, *MakeTable()* has a number of optional arguments that
 
 #### collapse - Modify the Way the Simulation Results are Aggregated
 
-For a given parameter constellation, there will be *nrep* simulation results in *output*. By default these are aggregated using *mean()*. Therefore, if *func* returns a test decision with the result either specified as 0 (for non-rejection) or 1 (for rejection), as it was the case in the *ttest()*-example, the results will be aggregated to represent the rejection frequency (size or power - depending on the DGP and the parameter constellation). Similarly, if *func* returns a point estimate, the mean of the estimated parameter is given in the table. By returning the deviation of the estimated parameter from its true value in *func* the table will represent the bias. By the same principle, MSEs can be calculated if *func* returns squares of these values.
+For a given parameter constellation, there will be *nrep* simulation results in *output*. By default these are aggregated using *mean()*. Therefore, if *func* returns a test decision with the result either specified as 0 (for non-rejection) or 1 (for rejection), as it was the case in the *ttest()*-example, the results will be aggregated to represent the rejection frequency (size or power - depending on the DGP and the parameter constellation). Similarly, if *func* returns a point estimate, the mean of the estimated parameter is given in the table. If *func* returns the deviation of the estimated parameter from its true value, then the table will represent the bias. By the same principle, MSEs can be calculated if *func* returns squares of these values.
 
 Even though the standard behavior is very versatile, one might be interested in a different aspect of the simulated distribution - for example a quantile such as the median. Therefore the *collapse* argument allows to supply other functions that can be used to aggregate the output. An example could be median() or sd(). These functions are supplied to *collapse* in form of a list of the same length as the output of *func*. Note also that the functions that are specified have to return scalars. 
 
@@ -285,6 +285,39 @@ To drop unwanted parts of the table, a list can be supplied to *partial_grid*, t
 
 There are only two required arguments. The first one, *path* specifies the path of the directory that contains the files that are supposed to be merged. The second one, *identifier* is a string that identifies which files should be merged. The string has to be a substring of the variable names of all files that are supposed to be merged, but it cannot be contained in the filenames of other files in the specified directory.
 
+## MakeFrame()
+
+It is often usefull to visualize the results of simulation studies with help of density plots, box plots and so on. To facilitate this, the MonteCarlo package does not provide its own suite of plotting functions. Instead, the function *MakeFrame()* converts the simulation results contained in the output of the *MonteCarlo()* function into a *data.frame* that is suitable to be manipulated and plotted with powerful standard tools such as *dplyr*, *ggplot2* and of course base graphics. The structure of the dataframe is such that each row contains the parameters used and the results of the simulation for one repetition. This is illustrated below.
+
+```{r}
+ttest<-function(n,loc,scale){
+  
+  sample<-rnorm(n, loc, scale)
+  stat<-sqrt(n)*mean(sample)/sd(sample)
+  return(list("stat"=stat))
+}
+```
+```{r include=FALSE}
+  MC_result<-MonteCarlo(func=ttest, nrep=1000, param_list=param_list)
+```
+```{r eval=FALSE}
+ MC_result<-MonteCarlo(func=ttest, nrep=1000, param_list=param_list)
+```
+```{r}
+df<-MakeFrame(MC_result)
+head(df)
+```
+
+If *func* returns a list with more than one element, then each of the list elements has its own column in the dataframe
+
+One can now use the dataframe to conduct further analyses. For example, we can plot estimated densities for the distribution of the t-test with different sample sizes *n*.
+
+```{r message=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+tbl <- tbl_df(df)
+ggplot(filter(tbl, loc==0, scale==1)) + geom_density(aes(x=stat, col=factor(n)))
+```
 
 ## Further Examples: Comparison of Two Estimators
 
@@ -366,9 +399,7 @@ MakeTable(output=erg_mean_median, rows=c("n"), cols=c("scale","list"), digits=4,
 A simple way to make these differences visible without displaying to many digits is to change the unit, for example by multiplying all results with 100. This is where the *transform* argument of *MakeTable()* comes in handy.
 
 ```{r}
-scale_table_100<-function(x){x*100}
-
-MakeTable(output=erg_mean_median, rows=c("n"), cols=c("scale","list"), digits=2, transform=list(scale_table_100, function(x){x*100}), include_meta=FALSE)
+MakeTable(output=erg_mean_median, rows=c("n"), cols=c("scale","list"), digits=2, transform=list(function(x){x*100}, function(x){x*100}), include_meta=FALSE)
 ```
 
 ### Collapse
