@@ -84,7 +84,13 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2,  max_grid=1000, pa
   s2<-paste("suppressMessages(sfInit(parallel=if(ncpus>1){TRUE}else{FALSE}, cpus = ncpus, type= 'SOCK'));",
             aux.s2,"sfClusterEval(.libPaths(libloc_strings));",
             if(length(packages)>0){paste("capture.output(suppressMessages(sfLibrary(",packages,")));", sep="", collapse="")}else{""},
+<<<<<<< HEAD
             'seed<-as.numeric(paste(sample(0:5,5,replace=TRUE), collapse=""));',
+||||||| merged common ancestors
+            'seed<-as.numeric(paste(sample(0:9,10,replace=TRUE), collapse=""));',
+=======
+            'seed<-as.numeric(paste(sample(0:9,5,replace=TRUE), collapse=""));',
+>>>>>>> 323f939fdf53d0d9992b4336ad8aef05b60836d1
             if(ncpus>1){"sfClusterSetupRNG(seed=rep(seed,6));"}else{""},
             "erg<-sfApply(as.matrix(1:nrep,nrep,1),margin=1,fun=func2,",subm_param,");suppressMessages(sfStop());",sep="", collapse="")
   
