@@ -6,6 +6,9 @@
 #
 #######################################################################################################################################
 
+
+
+
 #' @title Conversion of MonteCarlo outputs to data.frame.
 #' @description \code{MakeFrame} takes the output of \code{MonteCarlo} as its argument and returns a 
 #' data.frame that contains the simulation results.
@@ -38,7 +41,6 @@
 #'ggplot(filter(tbl, loc==0)) + geom_density(aes(x=stat, col=factor(n)))
 #'
 #'@export
-
 MakeFrame<-function(output){
   
   if(class(output)!="MonteCarlo")stop("output has to be an object of class MonteCarlo.")

@@ -59,9 +59,9 @@ tends to overestimate the time required.
 
 \code{export_also} allows to export data to the cluster in case parallized computations on a dataset are desired. 
 It also allows to bypass the automatic export of functions and packages. 
-To manually export a function or dataset or to load a package, pass a list to \code{export_also} where the list element is named
+To manually export a function or dataset or to load a package, pass a list to \code{export_also} where the list elements are named
 "functions", "data" and/or "packages". For example: \code{export_also=list("functions"=c("function_name_1", "function_name_2"), 
-"packages"="package_name")}.
+"packages"="package_name", "data"="mtcars"}.
 }
 \examples{
 test_func<-function(n,loc,scale){
@@ -83,6 +83,10 @@ summary(erg)
 rows<-c("n")
 cols<-c("loc","scale")
 MakeTable(output=erg, rows=rows, cols=cols, digits=2)
+
+# Note that parallized computation is not always faster, 
+# due to the computational costs of the overhead 
+# that is needed to manage multiple CPUs.
 
 }
 
