@@ -43,24 +43,25 @@
 #'@export
 MakeFrame<-function(output){
   
-  if(class(output)!="MonteCarlo")stop("output has to be an object of class MonteCarlo.")
-  param_list<-output$param_list
-  output_df<-NULL
-  for(j in 1:length(output$results)){
-    melted<-melt.array(output$results[[j]], varnames=c(names(param_list),"rep"))
-    melted<-melted[,-(length(param_list)+1)]
-    if(j==1){
-      output_df<-melted
-      names(output_df)[ncol(output_df)]<-names(output$results)[j]
-    }else{
-      output_df[,names(output$results)[j]]<-melted[,ncol(melted)]
+  if(class(output) != "MonteCarlo")stop("output has to be an object of class MonteCarlo.")
+  param_list <- output$param_list
+  output_df <- NULL
+  for (j in 1:length(output$results)) {
+    melted <- melt.array(output$results[[j]], varnames = c(names(param_list),"rep"))
+    melted <- melted[, -(length(param_list) + 1)]
+    if (j == 1) {
+      output_df <- melted
+      names(output_df)[ncol(output_df)] <- names(output$results)[j]
+    }
+    else {output_df[, names(output$results)[j]] <- melted[,ncol(melted)]
     }
   }
-  for(i in 1:(ncol(output_df)-length(output$results))){
-    if(is.numeric(param_list[[i]])){
-      aux<-unlist(strsplit(levels(output_df[,i]), split="="))
-      output_df[,i]<-param_list[[i]][match(param_list[[i]],as.numeric(aux[seq(2,length(aux),2)]))][as.numeric(output_df[,i])]
+  for (i in 1:(ncol(output_df) - length(output$results))){
+    if (is.numeric(param_list[[i]])) {
+      aux <- unlist(strsplit(as.character(output_df[, i]), split = "="))
+      output_df[,i]<-as.numeric(aux[seq(2,length(aux),2)])
     }
   }
   output_df
 }
+
