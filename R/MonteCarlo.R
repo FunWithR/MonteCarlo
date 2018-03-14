@@ -26,7 +26,7 @@ backtick_binaries<-function(vec_of_strings){
 #'@import snowfall
 #'@import rlecuyer
 
-MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, packages=NULL, export_functions=NULL){
+MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2,  max_grid=1000, packages=NULL, export_functions=NULL){
   #, debug=FALSE
   
   # ------- extract information from parameter list
@@ -38,8 +38,11 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, pac
     
   subm_param<-paste(param_names,"=",param_names,",", sep="",collapse="")
   subm_param<-substr(subm_param,1,(nchar(subm_param)-1))
-  eval(parse(text=paste("func2<-function(","aux,",subm_param,"){func(",subm_param,")}")))  
-  
+  #if(mode=="longitudinal"){
+  eval(parse(text=paste("func2<-function(","aux,",subm_param,"){func(",subm_param,")}")))
+  #}  
+  #if(mode=="cross-sectional"){func2<-function(params){eval(parse(text=paste("func(",paste(params, collapse=","),")", collapse="")))}}
+
   grid_size<-prod(dim_vec)  
   cat(paste("Grid of ",grid_size, " parameter constellations to be evaluated.","\n","\n"))
   
@@ -73,8 +76,7 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, pac
   
   
   
-  s1<-paste(paste(c(paste("for(",index, " in 1:", dim_vec,"){", sep="",collapse=""),
-                    "rep<-rep+1;setTxtProgressBar(pb, rep);"),collapse=""),assign_param_values, sep="",collapse="")
+  s1<-paste(paste(c(paste("for(",index, " in 1:", dim_vec,"){", sep="",collapse="")),collapse=""),assign_param_values, sep="",collapse="")
   
   in_export<-paste("'",c('func2','func','libloc_strings',export_functions,param_names),"'", collapse=",", sep="")
   aux.s2<-paste("if(ncpus>1){sfExport(",in_export,")};",sep="")
@@ -82,7 +84,7 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, pac
   s2<-paste("suppressMessages(sfInit(parallel=if(ncpus>1){TRUE}else{FALSE}, cpus = ncpus, type= 'SOCK'));",
             aux.s2,"sfClusterEval(.libPaths(libloc_strings));",
             if(length(packages)>0){paste("capture.output(suppressMessages(sfLibrary(",packages,")));", sep="", collapse="")}else{""},
-            'seed<-as.numeric(paste(sample(0:9,5,replace=TRUE), collapse=""));',
+            'seed<-as.numeric(paste(sample(0:5,5,replace=TRUE), collapse=""));',
             if(ncpus>1){"sfClusterSetupRNG(seed=rep(seed,6));"}else{""},
             "erg<-sfApply(as.matrix(1:nrep,nrep,1),margin=1,fun=func2,",subm_param,");suppressMessages(sfStop());",sep="", collapse="")
   
@@ -90,10 +92,10 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, pac
             paste(paste(index,",", collapse="", sep=""),"]<-",sep="",collapse=""),sep=""),
             paste("as.numeric(unlist(erg)[which(gsub(' ', '_',names(unlist(erg)))==","'",ret_vals,"'",")]);",sep=""), collapse="")    
   s3<-substr(s3,1,(nchar(s3)-1))
-  
+  s3b<-";rep<-rep+1;setTxtProgressBar(pb, rep)"
   s4<-paste(rep("}",n_param),collapse="")
   
-  all_loops<-paste(c(s1,s2,s3,s4), collapse="")
+  all_loops<-paste(c(s1,s2,s3,s3b,s4), collapse="")
   rep<-0
   
   #if(debug==TRUE){
@@ -112,6 +114,7 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, pac
   #  return("Inner loops printed and relevant variables defined in global environment.")
   #}
   eval(parse(text=all_loops))
+  cat("\n","\n")
   return(results)
 }
 
@@ -144,9 +147,9 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, pac
 #' 
 #' \code{export_also} allows to export data to the cluster in case parallized computations on a dataset are desired. 
 #' It also allows to bypass the automatic export of functions and packages. 
-#' To manually export a function or dataset or to load a package, pass a list to \code{export_also} where the list element is named
+#' To manually export a function or dataset or to load a package, pass a list to \code{export_also} where the list elements are named
 #' "functions", "data" and/or "packages". For example: \code{export_also=list("functions"=c("function_name_1", "function_name_2"), 
-#' "packages"="package_name")}.
+#' "packages"="package_name", "data"="mtcars"}.
 #' 
 #' @param func The function to be evaluated. See details.
 #' @param nrep An integer that specifies the desired number of Monte Carlo repetitions.
@@ -188,11 +191,16 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2, max_grid=1000, pac
 #'cols<-c("loc","scale")
 #'MakeTable(output=erg, rows=rows, cols=cols, digits=2)
 #'
+#'# Note that parallized computation is not always faster, 
+#'# due to the computational costs of the overhead 
+#'# that is needed to manage multiple CPUs.
+#'
 #'@export
 
 MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test=FALSE, save_res=FALSE, raw=TRUE, export_also=NULL){
   # , debug=FALSE
   
+  #mode<-mode[1] # , mode=c("longitudinal","cross-sectional")
   
   # -------- check whether arguments supplied to function are admissable 
     
@@ -200,18 +208,18 @@ MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test
   if(is.list(param_list)==FALSE)stop("param_list must be a list containing the names of the function arguments and the vectors of values that are supposed to be passed as arguments.")
   for(i in 1:length(param_list)){if(is.vector(param_list[[i]])==FALSE)stop("Parameter grids have to be vectors.")}
   if((round(nrep)==nrep&&nrep>0)==FALSE)stop("nrep must be a positive integer.")
+  #if(mode%in%c("longitudinal","cross-sectional")==FALSE)stop("mode must be either 'longitudinal' of 'cross-sectional'.")
   
   # -------- Make test run so that error messages are thrown right away and extract names of list elements
   
   param_names<-names(param_list)
   test_run<-eval(parse(text=paste("func(",paste(param_names,"=param_list[[",1:length(param_names),"]][1]", sep="", collapse=","),")", collapse="", sep="")))
-  test_run2<-eval(parse(text=paste("func(",paste(param_names,"=param_list[[",1:length(param_names),"]][1]", sep="", collapse=","),")", collapse="", sep="")))
-  if(unlist(test_run)==unlist(test_run2))stop("func does not contain a random experiment.")
   ret_vals<-gsub(" ", "_", names(test_run))
   
   if(is.list(test_run)==FALSE)stop("func has to return a list with named components. each component has to be scalar.")
   for(i in 1:length(test_run)){if(is.null(names(test_run[[i]]))==FALSE)stop("Scalars in list components cannot be named.")}
   for(i in 1:length(test_run)){if(length(test_run[[i]])>1)stop("func has to return a list with named components. Each component has to be scalar.")}
+  if(length(names(test_run))!=length(unique(names(test_run))))stop("Names of list elements returned by func have to be unique.")
   
   # --------- Check which functions that are called in func, match functions in the global environment and prepare to export those
   
@@ -221,8 +229,8 @@ MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test
   for(i in 1:length(all)){
     if(is.function(eval(parse(text=all[i])))){all_funcs<-c(all_funcs,all[i])}
   }
-  globals_in_func<-findGlobals(func)
-  in_func_aux<-globals_in_func # extract functions used in func
+  globals_in_func<-findGlobals(func, merge=FALSE)
+  in_func_aux<-globals_in_func$functions # extract functions used in func
 
   # --------------   remove <- from function name for replacement functions
   
@@ -262,7 +270,7 @@ MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test
   
   # -- add everything that is specified in export_also
   
-  export_functions<-c(export_functions,export_also$functions,export_also$data)
+  export_functions<-c(export_functions,export_also$functions,export_also$data, export_also$variables, globals_in_func$variables)
   
   # -------- Find out which packages have to be loaded into cluster
   
@@ -338,7 +346,7 @@ MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test
     erg_pre<-MC_inner(func=func, nrep=nrep/10, param_list=param_list2, ret_vals=ret_vals, ncpus=ncpus, max_grid=max_grid, packages=packages, export_functions=export_functions) # , debug=debug
     t2<-Sys.time()
     time<-(t2-t1)*grid_size/grid_size2*10    
-    cat(paste("Estimated time required:", round(as.numeric(time)), attributes(time)$units, "\n", "\n"))
+    cat(paste("Estimated time required:", round(time, digits=2), units(time), "\n", "\n"))
     if(save_res==TRUE){
       time_done<-Sys.time()    
       filename<-paste("MonteCarloTest", "_", as.character(as.Date(time_done)), "_", gsub(":", "-", x=format(time_done,"%H:%M:%S")), ".Rdata", sep="")

@@ -170,7 +170,7 @@ MakeTable<-function(output, rows, cols, digits=4, collapse=NULL, transform=NULL,
   
   if(is.null(collapse)==FALSE){
     for(i in 1:length(collapse)){
-      if(length(do.call(collapse[[i]], list(rnorm(100))))>1)stop("Functions included in collapse have to return a scalar.")
+      if(length(do.call(collapse[[i]], list(seq(1,10,1))))>1)stop("Functions included in collapse have to return a scalar.")
     }
   }
   
