@@ -22,11 +22,10 @@ backtick_binaries<-function(vec_of_strings){
 #'Runs Monte Carlo. For details see documentation of wrapper function.
 #'@keywords internal
 #'@importFrom utils txtProgressBar
+#'@import rlecuyer
 #'@import snow
 #'@import snowfall
-#'@import rlecuyer
-
-MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2,  max_grid=1000, packages=NULL, export_functions=NULL){
+MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=1,  max_grid=1000, packages=NULL, export_functions=NULL){
   #, debug=FALSE
   
   # ------- extract information from parameter list
@@ -48,7 +47,10 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2,  max_grid=1000, pa
   
   #------- setup progress bar
   
-  if(ncpus>1){cat(paste("Simulation parallelized using",ncpus, "cpus.","\n","\n"))}
+  if(ncpus>1){
+    cat(paste("Simulation parallelized using",ncpus, "cpus.","\n","\n"))
+    library(snow)
+    }
   cat(paste("Progress:","\n","\n"))
   pb <- txtProgressBar(min=0, max=grid_size, style=3)
   
@@ -170,6 +172,10 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=2,  max_grid=1000, pa
 #' @import codetools
 #' @importFrom utils capture.output
 #' @importFrom utils packageDescription
+#' @importFrom utils txtProgressBar
+#' @import rlecuyer
+#' @import snow
+#' @import snowfall
 #' @examples
 #' test_func<-function(n,loc,scale){
 #'  sample<-rnorm(n, loc, scale)
@@ -203,7 +209,7 @@ MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test
   #mode<-mode[1] # , mode=c("longitudinal","cross-sectional")
   
   # -------- check whether arguments supplied to function are admissable 
-    
+  
   if(is.function(func)==FALSE)stop("func must be a function")
   if(is.list(param_list)==FALSE)stop("param_list must be a list containing the names of the function arguments and the vectors of values that are supposed to be passed as arguments.")
   for(i in 1:length(param_list)){if(is.vector(param_list[[i]])==FALSE)stop("Parameter grids have to be vectors.")}
@@ -269,6 +275,8 @@ MonteCarlo<-function(func, nrep, param_list, ncpus=1, max_grid=1000, time_n_test
   }
   
   # -- add everything that is specified in export_also
+  
+  globals_in_func$variables<-globals_in_func$variables[which(globals_in_func$variables%in%c("LETTERS","letters","month.abb", "month.name","pi")==FALSE)]
   
   export_functions<-c(export_functions,export_also$functions,export_also$data, export_also$variables, globals_in_func$variables)
   
