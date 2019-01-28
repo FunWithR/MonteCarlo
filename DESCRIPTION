@@ -20,7 +20,7 @@ Imports:
     stats(>= 3.0.2),
     utils(>= 3.0.2),
     reshape(>= 0.8.6)
-RoxygenNote: 5.0.1
+RoxygenNote: 6.1.1
 Suggests: knitr,
     rmarkdown,
     testthat,

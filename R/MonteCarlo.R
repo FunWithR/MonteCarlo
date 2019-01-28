@@ -49,8 +49,7 @@ MC_inner<-function(func, nrep, param_list, ret_vals, ncpus=1,  max_grid=1000, pa
   
   if(ncpus>1){
     cat(paste("Simulation parallelized using",ncpus, "cpus.","\n","\n"))
-    library(snow)
-    }
+  }
   cat(paste("Progress:","\n","\n"))
   pb <- txtProgressBar(min=0, max=grid_size, style=3)
   

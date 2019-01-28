@@ -139,4 +139,3 @@ MakeTable(output=erg_mean_median, rows=c("n","loc"), cols=c("scale","list"),
           include_meta=FALSE)
 
 }
-

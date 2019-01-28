@@ -24,4 +24,3 @@ other files in the directory.
 \donttest{out<-MergeResults(identifier="MonteCarloResults", path="C:/Users/")
 summary(out)}
 }
-

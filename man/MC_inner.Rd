@@ -4,11 +4,10 @@
 \alias{MC_inner}
 \title{Runs Monte Carlo. For details see documentation of wrapper function.}
 \usage{
-MC_inner(func, nrep, param_list, ret_vals, ncpus = 2, max_grid = 1000,
+MC_inner(func, nrep, param_list, ret_vals, ncpus = 1, max_grid = 1000,
   packages = NULL, export_functions = NULL)
 }
 \description{
 Runs Monte Carlo. For details see documentation of wrapper function.
 }
 \keyword{internal}
-

@@ -10,4 +10,3 @@ make_index(letter, number)
 helper function to create index string
 }
 \keyword{internal}
-

@@ -5,7 +5,8 @@
 \title{Parallized Monte Carlo Simulation}
 \usage{
 MonteCarlo(func, nrep, param_list, ncpus = 1, max_grid = 1000,
-  time_n_test = FALSE, save_res = FALSE, raw = TRUE, export_also = NULL)
+  time_n_test = FALSE, save_res = FALSE, raw = TRUE,
+  export_also = NULL)
 }
 \arguments{
 \item{func}{The function to be evaluated. See details.}
@@ -89,4 +90,3 @@ MakeTable(output=erg, rows=rows, cols=cols, digits=2)
 # that is needed to manage multiple CPUs.
 
 }
-

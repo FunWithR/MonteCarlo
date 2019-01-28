@@ -10,4 +10,3 @@ collapse_results(output, collapse)
 helper function to average over results from MonteCarlo() run
 }
 \keyword{internal}
-

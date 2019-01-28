@@ -43,4 +43,3 @@ tbl <- tbl_df(df)
 ggplot(filter(tbl, loc==0)) + geom_density(aes(x=stat, col=factor(n)))
 
 }
-
