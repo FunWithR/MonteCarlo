@@ -1,8 +1,8 @@
 Package: MonteCarlo
 Type: Package
 Title: Automatic Parallelized Monte Carlo Simulations
-Version: 1.0.5
-Date: 2018-07-30
+Version: 1.0.6
+Date: 2019-01-29
 Author: Christian Hendrik Leschinski
 Maintainer: Christian Hendrik Leschinski <leschinski@statistik.uni-hannover.de>
 Description: Simplifies Monte Carlo simulation studies by automatically 
@@ -15,11 +15,12 @@ Imports:
     abind(>= 1.4-0),
     codetools(>= 0.2-8),
     rlecuyer(>= 0.3-4),
-    snow(>= 0.4-1),
     snowfall(>= 1.84-4),
     stats(>= 3.0.2),
     utils(>= 3.0.2),
     reshape(>= 0.8.6)
+Depends:
+    snow(>= 0.4-1)
 RoxygenNote: 6.1.1
 Suggests: knitr,
     rmarkdown,
