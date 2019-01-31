@@ -4,7 +4,7 @@ Title: Automatic Parallelized Monte Carlo Simulations
 Version: 1.0.6
 Date: 2019-01-29
 Author: Christian Hendrik Leschinski
-Maintainer: Christian Hendrik Leschinski <leschinski@statistik.uni-hannover.de>
+Maintainer: Christian Hendrik Leschinski <christian_leschinski@gmx.de>
 Description: Simplifies Monte Carlo simulation studies by automatically 
              setting up loops to run over parameter grids and parallelising
              the Monte Carlo repetitions. It also generates LaTeX tables.
